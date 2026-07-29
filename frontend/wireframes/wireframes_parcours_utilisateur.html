@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Wireframes — Parcours utilisateur</title>
+<style>
+  :root{
+    --ink:#1E1B4B;
+    --line:#9A96B8;
+    --line-soft:#D8D5E8;
+    --bg:#F5F4FA;
+    --panel:#FFFFFF;
+    --muted:#6B6890;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    padding:40px 24px 80px;
+  }
+  h1{font-size:22px;margin:0 0 4px;}
+  .subtitle{color:var(--muted);font-size:14px;margin:0 0 40px;}
+
+  /* ===== Flow diagram ===== */
+  .flow{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:10px;
+    margin-bottom:56px;
+    padding:20px;
+    background:var(--panel);
+    border:1px solid var(--line-soft);
+    border-radius:12px;
+  }
+  .flow-step{
+    border:1.5px dashed var(--line);
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:12px;
+    font-weight:600;
+    white-space:nowrap;
+  }
+  .flow-arrow{color:var(--line);font-size:16px;}
+  .flow-branch{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    align-items:flex-start;
+  }
+  .flow-note{
+    width:100%;
+    font-size:11px;
+    color:var(--muted);
+    margin-top:14px;
+    border-top:1px dashed var(--line-soft);
+    padding-top:12px;
+  }
+
+  /* ===== Screen grid ===== */
+  .grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:32px;
+  }
+  .screen-card{display:flex;flex-direction:column;align-items:center;}
+  .screen-label{font-size:12px;font-weight:700;margin-bottom:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);}
+  .phone{
+    width:220px;
+    height:440px;
+    background:var(--panel);
+    border:2px solid var(--ink);
+    border-radius:24px;
+    padding:10px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    position:relative;
+    overflow:hidden;
+  }
+  .notch{width:50px;height:5px;background:var(--line-soft);border-radius:3px;margin:0 auto 4px;}
+
+  .box{border:1.5px dashed var(--line);border-radius:6px;}
+  .txt-line{height:6px;background:var(--line-soft);border-radius:3px;}
+  .txt-line.w60{width:60%;}
+  .txt-line.w40{width:40%;}
+  .txt-line.w80{width:80%;}
+
+  .btn{
+    border:1.5px solid var(--ink);
+    border-radius:8px;
+    text-align:center;
+    font-size:10px;
+    font-weight:700;
+    padding:8px 4px;
+  }
+  .btn.ghost{border-style:dashed;color:var(--muted);border-color:var(--line);}
+  .btn.sos{
+    border-color:var(--ink);
+    background:var(--ink);
+    color:#fff;
+  }
+
+  .pill{
+    border:1.5px dashed var(--line);
+    border-radius:20px;
+    font-size:9px;
+    color:var(--muted);
+    padding:4px 10px;
+    display:inline-block;
+  }
+  .row{display:flex;gap:6px;flex-wrap:wrap;}
+  .avatar{width:26px;height:26px;border-radius:50%;border:1.5px dashed var(--line);flex-shrink:0;}
+  .bubble{
+    border:1.5px dashed var(--line);
+    border-radius:10px;
+    padding:6px 8px;
+    font-size:9px;
+    color:var(--muted);
+    max-width:75%;
+  }
+  .bubble.right{align-self:flex-end;border-style:solid;background:var(--ink);color:#fff;border-color:var(--ink);}
+  .card-row{display:flex;flex-direction:column;gap:2px;}
+  .footer-note{font-size:9px;color:var(--muted);margin-top:auto;text-align:center;}
+</style>
+</head>
+<body>
+
+<h1>Parcours utilisateur — structure des écrans (MVP)</h1>
+<p class="subtitle">Wireframes basse fidélité — structure et logique de navigation, pas de style visuel final</p>
+
+<div class="flow">
+  <div class="flow-step">Ouverture app</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">Message d'accueil rassurant</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">Inscription (pseudo, âge, mdp)</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">Accueil</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-branch">
+    <div class="flow-step">Journal</div>
+    <div class="flow-step">Écoutant (chat)</div>
+    <div class="flow-step">Cercles d'écoute</div>
+    <div class="flow-step">Annuaire ressources</div>
+  </div>
+  <div class="flow-note">
+    Le bouton <strong>SOS</strong> reste accessible depuis tous les écrans (pas seulement l'accueil) — pas une étape du parcours, un raccourci permanent.
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- 0. Message d'accueil -->
+  <div class="screen-card">
+    <div class="screen-label">0 — Message d'accueil (2-3 sec, puis fondu)</div>
+    <div class="phone" style="background:var(--ink);border-color:var(--ink);align-items:center;justify-content:center;text-align:center;">
+      <div class="notch" style="background:rgba(255,255,255,.3);position:absolute;top:10px;"></div>
+      <div class="txt-line" style="background:rgba(255,255,255,.9);height:16px;width:70%;margin:0 auto 10px;"></div>
+      <div class="txt-line" style="background:rgba(255,255,255,.5);height:6px;width:55%;margin:0 auto 6px;"></div>
+      <div class="txt-line" style="background:rgba(255,255,255,.5);height:6px;width:45%;margin:0 auto;"></div>
+      <div class="footer-note" style="color:rgba(255,255,255,.5);position:absolute;bottom:16px;left:0;right:0;">"NOUS SOMMES LÀ POUR TOI" — puis fondu vers l'inscription</div>
+    </div>
+  </div>
+
+  <!-- 1. Inscription -->
+  <div class="screen-card">
+    <div class="screen-label">1 — Inscription</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w60" style="height:12px;margin:10px auto 16px;"></div>
+      <div class="card-row" style="gap:3px;margin-bottom:8px;">
+        <div class="txt-line w40" style="height:5px;"></div>
+        <div class="box" style="height:28px;"></div>
+      </div>
+      <div class="card-row" style="gap:3px;margin-bottom:8px;">
+        <div class="txt-line w40" style="height:5px;"></div>
+        <div class="box" style="height:28px;width:40%;"></div>
+      </div>
+      <div class="card-row" style="gap:3px;margin-bottom:8px;">
+        <div class="txt-line w40" style="height:5px;"></div>
+        <div class="box" style="height:28px;"></div>
+      </div>
+      <div class="card-row" style="gap:3px;margin-bottom:8px;">
+        <div class="txt-line w40" style="height:5px;"></div>
+        <div class="box" style="height:28px;"></div>
+      </div>
+      <div style="flex:1;"></div>
+      <div class="btn">Créer mon espace</div>
+      <div class="footer-note">Pseudo · Âge · Mot de passe · Confirmation</div>
+    </div>
+  </div>
+
+  <!-- 2. Accueil -->
+  <div class="screen-card">
+    <div class="screen-label">2 — Accueil</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="row" style="justify-content:space-between;align-items:center;">
+        <div class="txt-line w40"></div>
+        <div class="avatar"></div>
+      </div>
+      <div class="box" style="height:60px;margin-top:10px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">Comment tu te sens aujourd'hui ?</div>
+      <div class="box" style="height:50px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">Écrire dans mon journal</div>
+      <div class="box" style="height:50px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">Parler à un écoutant</div>
+      <div class="box" style="height:50px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">Mes cercles d'écoute</div>
+      <div style="flex:1;"></div>
+      <div class="btn sos">J'ai besoin d'aide maintenant</div>
+    </div>
+  </div>
+
+  <!-- 3. Journal -->
+  <div class="screen-card">
+    <div class="screen-label">3 — Journal émotionnel</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w40" style="margin-bottom:6px;"></div>
+      <div class="row">
+        <div class="pill">🙂</div><div class="pill">😐</div><div class="pill">😢</div><div class="pill">😡</div>
+      </div>
+      <div class="box" style="height:90px;margin-top:10px;display:flex;align-items:flex-start;padding:8px;font-size:9px;color:var(--muted);">Ce que je ressens aujourd'hui...</div>
+      <div class="row" style="margin-top:6px;">
+        <div class="pill" style="border-style:solid;">🎤 Audio</div>
+        <div class="pill" style="border-style:solid;">📷 Photo</div>
+      </div>
+      <div class="btn" style="margin-top:8px;">Enregistrer</div>
+      <div class="txt-line w40" style="margin-top:16px;"></div>
+      <div class="box" style="height:16px;"></div>
+      <div class="box" style="height:16px;"></div>
+      <div class="footer-note">Historique privé, visible par toi seul(e)</div>
+    </div>
+  </div>
+
+  <!-- 4. Chat écoutant -->
+  <div class="screen-card">
+    <div class="screen-label">4 — Chat avec un écoutant</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="row" style="align-items:center;gap:8px;">
+        <div class="avatar"></div>
+        <div class="card-row"><div class="txt-line w40"></div><div class="txt-line w40" style="height:4px;opacity:.6;"></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;flex:1;">
+        <div class="bubble">Salut, je suis là pour t'écouter</div>
+        <div class="bubble right">j'arrive plus à dormir</div>
+        <div class="bubble">Raconte-moi ce qui se passe</div>
+      </div>
+      <div class="box" style="height:32px;display:flex;align-items:center;padding:0 8px;font-size:9px;color:var(--muted);">Écrire un message...</div>
+    </div>
+  </div>
+
+  <!-- 5. Cercles d'écoute -->
+  <div class="screen-card">
+    <div class="screen-label">5 — Cercles d'écoute</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w60" style="margin-bottom:10px;"></div>
+      <div class="box" style="height:56px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w60"></div>
+        <div class="txt-line w40" style="opacity:.6;"></div>
+      </div>
+      <div class="box" style="height:56px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w60"></div>
+        <div class="txt-line w40" style="opacity:.6;"></div>
+      </div>
+      <div class="box" style="height:56px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w60"></div>
+        <div class="txt-line w40" style="opacity:.6;"></div>
+      </div>
+      <div class="footer-note">Pression scolaire · Solitude · Violences à la maison...</div>
+    </div>
+  </div>
+
+  <!-- 6. SOS -->
+  <div class="screen-card">
+    <div class="screen-label">6 — Écran SOS</div>
+    <div class="phone" style="background:var(--ink);border-color:var(--ink);">
+      <div class="notch" style="background:rgba(255,255,255,.3);"></div>
+      <div class="txt-line w80" style="background:rgba(255,255,255,.5);height:10px;margin:16px auto 4px;"></div>
+      <div class="txt-line w60" style="background:rgba(255,255,255,.3);margin:0 auto 20px;"></div>
+      <div class="btn" style="background:#fff;color:var(--ink);border-color:#fff;">Parler à un écoutant maintenant</div>
+      <div class="btn" style="border-color:#fff;color:#fff;margin-top:8px;">Ligne d'écoute (appel)</div>
+      <div class="btn ghost" style="border-color:rgba(255,255,255,.4);color:rgba(255,255,255,.7);margin-top:8px;">Voir les ressources près de moi</div>
+      <div style="flex:1;"></div>
+      <div class="footer-note" style="color:rgba(255,255,255,.6);">Toujours accessible, un seul geste</div>
+    </div>
+  </div>
+
+  <!-- 7. Annuaire -->
+  <div class="screen-card">
+    <div class="screen-label">7 — Annuaire ressources</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="box" style="height:26px;display:flex;align-items:center;padding:0 8px;font-size:9px;color:var(--muted);">Filtrer par ville</div>
+      <div class="box" style="height:64px;margin-top:8px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w60"></div><div class="txt-line w80" style="opacity:.5;"></div>
+      </div>
+      <div class="box" style="height:64px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w60"></div><div class="txt-line w80" style="opacity:.5;"></div>
+      </div>
+      <div class="footer-note">Psychologues · ONG · Centres d'écoute</div>
+    </div>
+  </div>
+
+  <!-- 8. Profil -->
+  <div class="screen-card">
+    <div class="screen-label">8 — Profil / Paramètres</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="avatar" style="width:48px;height:48px;margin:10px auto;"></div>
+      <div class="txt-line w40" style="margin:0 auto 20px;"></div>
+      <div class="box" style="height:34px;display:flex;align-items:center;padding:0 8px;font-size:9px;color:var(--muted);">Confidentialité</div>
+      <div class="box" style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:9px;color:var(--muted);">🔒 Sécurité (Face ID + mot de passe)<div class="pill" style="border-style:solid;padding:2px 6px;">ON</div></div>
+      <div class="box" style="height:34px;display:flex;align-items:center;padding:0 8px;font-size:9px;color:var(--muted);">Notifications</div>
+      <div class="box" style="height:34px;display:flex;align-items:center;padding:0 8px;font-size:9px;color:var(--muted);">Aide</div>
+      <div style="flex:1;"></div>
+      <div class="btn ghost">Se déconnecter</div>
+    </div>
+  </div>
+  <!-- 9. Verrouillage -->
+  <div class="screen-card">
+    <div class="screen-label">9 — Verrouillage (aux ouvertures suivantes)</div>
+    <div class="phone" style="align-items:center;justify-content:center;text-align:center;">
+      <div class="notch" style="position:absolute;top:10px;"></div>
+      <div class="box" style="width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;">🔒</div>
+      <div class="txt-line w60" style="margin:14px auto 20px;"></div>
+      <div class="btn" style="width:80%;">Déverrouiller par Face ID</div>
+      <div class="btn ghost" style="width:80%;margin-top:8px;">Utiliser le mot de passe</div>
+    </div>
+  </div>
+
+</div>
+
+<h1 style="margin-top:64px;">Côté écoutant — structure des écrans</h1>
+<p class="subtitle">L'écoutant est un volontaire formé et validé, pas anonyme comme l'ado — connexion classique, pas d'inscription libre</p>
+
+<div class="flow">
+  <div class="flow-step">Message d'accueil ("merci de nous aider à aller mieux")</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">Connexion (compte validé)</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">Tableau de bord</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-branch">
+    <div class="flow-step">Conversations en attente / en cours</div>
+    <div class="flow-step">Cercle d'écoute (modération)</div>
+    <div class="flow-step">Profil / disponibilité</div>
+  </div>
+  <div class="flow-note">
+    Depuis toute conversation, l'écoutant peut <strong>escalader vers un superviseur</strong> s'il sent une situation grave — ce n'est pas lui qui décide seul de la suite.
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- E-1. Message d'accueil écoutant -->
+  <div class="screen-card">
+    <div class="screen-label">E-1 — Message d'accueil (avant connexion)</div>
+    <div class="phone" style="background:var(--ink);border-color:var(--ink);align-items:center;justify-content:center;text-align:center;">
+      <div class="notch" style="background:rgba(255,255,255,.3);position:absolute;top:10px;"></div>
+      <div class="txt-line" style="background:rgba(255,255,255,.9);height:16px;width:75%;margin:0 auto 10px;"></div>
+      <div class="txt-line" style="background:rgba(255,255,255,.5);height:6px;width:55%;margin:0 auto 6px;"></div>
+      <div class="txt-line" style="background:rgba(255,255,255,.5);height:6px;width:45%;margin:0 auto;"></div>
+      <div class="footer-note" style="color:rgba(255,255,255,.5);position:absolute;bottom:16px;left:0;right:0;">"MERCI DE NOUS AIDER À ALLER MIEUX" — puis fondu vers la connexion</div>
+    </div>
+  </div>
+
+  <!-- E0. Connexion -->
+  <div class="screen-card">
+    <div class="screen-label">E0 — Connexion écoutant</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w60" style="height:12px;margin:24px auto 20px;"></div>
+      <div class="card-row" style="gap:3px;margin-bottom:8px;">
+        <div class="txt-line w40" style="height:5px;"></div>
+        <div class="box" style="height:28px;"></div>
+      </div>
+      <div class="card-row" style="gap:3px;margin-bottom:8px;">
+        <div class="txt-line w40" style="height:5px;"></div>
+        <div class="box" style="height:28px;"></div>
+      </div>
+      <div style="flex:1;"></div>
+      <div class="btn">Se connecter</div>
+      <div class="footer-note">Compte créé après validation par l'association partenaire</div>
+    </div>
+  </div>
+
+  <!-- E1. Tableau de bord -->
+  <div class="screen-card">
+    <div class="screen-label">E1 — Tableau de bord</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="row" style="justify-content:space-between;align-items:center;">
+        <div class="txt-line w40"></div>
+        <div class="pill" style="border-style:solid;">🟢 Disponible</div>
+      </div>
+      <div class="box" style="height:44px;margin-top:10px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">3 demandes en attente</div>
+      <div class="box" style="height:44px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">2 conversations en cours</div>
+      <div class="box" style="height:44px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">Mes cercles d'écoute</div>
+      <div class="box" style="height:44px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">Mon planning</div>
+      <div style="flex:1;"></div>
+      <div class="footer-note">Statistiques : ados accompagnés, temps d'écoute</div>
+    </div>
+  </div>
+
+  <!-- E2. Conversations en attente -->
+  <div class="screen-card">
+    <div class="screen-label">E2 — Conversations en attente</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w60" style="margin-bottom:10px;"></div>
+      <div class="box" style="height:52px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w40"></div>
+        <div class="txt-line w80" style="opacity:.5;"></div>
+      </div>
+      <div class="box" style="height:52px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w40"></div>
+        <div class="txt-line w80" style="opacity:.5;"></div>
+      </div>
+      <div class="box" style="height:52px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w40"></div>
+        <div class="txt-line w80" style="opacity:.5;"></div>
+      </div>
+      <div class="footer-note">Anonymisées : pseudo + premier message seulement</div>
+    </div>
+  </div>
+
+  <!-- E3. Chat côté écoutant -->
+  <div class="screen-card">
+    <div class="screen-label">E3 — Chat (vue écoutant)</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="row" style="align-items:center;justify-content:space-between;">
+        <div class="row" style="align-items:center;gap:8px;">
+          <div class="avatar"></div>
+          <div class="txt-line w40"></div>
+        </div>
+        <div class="pill" style="border-style:solid;color:var(--ink);">⚠ Signaler</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px;flex:1;">
+        <div class="bubble right">j'arrive plus à dormir</div>
+        <div class="bubble">Raconte-moi ce qui se passe</div>
+      </div>
+      <div class="box" style="height:32px;display:flex;align-items:center;padding:0 8px;font-size:9px;color:var(--muted);">Écrire un message...</div>
+    </div>
+  </div>
+
+  <!-- E4. Cercle - modération -->
+  <div class="screen-card">
+    <div class="screen-label">E4 — Cercle d'écoute (modération)</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w60" style="margin-bottom:10px;"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+        <div class="bubble">Membre A : je me sens seul</div>
+        <div class="bubble">Membre B : moi aussi parfois</div>
+        <div class="bubble right">Merci de partager, vous n'êtes pas seuls</div>
+      </div>
+      <div class="box" style="height:28px;display:flex;align-items:center;padding:0 8px;font-size:9px;color:var(--muted);">Intervenir dans le groupe...</div>
+    </div>
+  </div>
+
+  <!-- E5. Escalade -->
+  <div class="screen-card">
+    <div class="screen-label">E5 — Escalader vers un superviseur</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w60" style="height:12px;margin:14px auto 10px;"></div>
+      <div class="box" style="height:26px;display:flex;align-items:center;padding:0 8px;font-size:9px;color:var(--muted);">Niveau de gravité</div>
+      <div class="box" style="height:70px;margin-top:8px;display:flex;align-items:flex-start;padding:8px;font-size:9px;color:var(--muted);">Décrire brièvement la situation...</div>
+      <div style="flex:1;"></div>
+      <div class="btn">Envoyer au superviseur</div>
+      <div class="footer-note">La conversation reste ouverte pendant la prise en charge</div>
+    </div>
+  </div>
+
+  <!-- E6. Planning -->
+  <div class="screen-card">
+    <div class="screen-label">E6 — Mon planning</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w40" style="margin-bottom:8px;"></div>
+      <div class="row" style="margin-bottom:8px;">
+        <div class="pill" style="border-style:solid;">Cercles</div>
+        <div class="pill">Séances physiques*</div>
+      </div>
+      <div class="box" style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:9px;color:var(--muted);">Mer. 16h — Cercle "solitude"<div class="pill" style="padding:2px 6px;">modifier</div></div>
+      <div class="box" style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:9px;color:var(--muted);">Sam. 10h — Cercle "pression scolaire"<div class="pill" style="padding:2px 6px;">modifier</div></div>
+      <div class="btn ghost" style="margin-top:8px;">+ Ajouter un créneau</div>
+      <div style="flex:1;"></div>
+      <div class="footer-note">*Séances physiques réservées aux psychologues partenaires certifiés, en lieu institutionnel</div>
+    </div>
+  </div>
+
+  <!-- E7. Profil écoutant -->
+  <div class="screen-card">
+    <div class="screen-label">E7 — Profil / disponibilité</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="avatar" style="width:48px;height:48px;margin:10px auto;"></div>
+      <div class="txt-line w40" style="margin:0 auto 20px;"></div>
+      <div class="box" style="height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:9px;color:var(--muted);">Disponibilité<div class="pill" style="border-style:solid;padding:2px 6px;">ON</div></div>
+      <div class="box" style="height:34px;display:flex;align-items:center;padding:0 8px;font-size:9px;color:var(--muted);">Formation suivie</div>
+      <div class="box" style="height:34px;display:flex;align-items:center;padding:0 8px;font-size:9px;color:var(--muted);">Notifications</div>
+      <div style="flex:1;"></div>
+      <div class="btn ghost">Se déconnecter</div>
+    </div>
+  </div>
+
+</div>
+
+<h1 style="margin-top:64px;">Côté admin / superviseur — structure des écrans</h1>
+<p class="subtitle">Le superviseur reçoit les alertes (des écoutants et du module IA), valide les écoutants, gère l'annuaire</p>
+
+<div class="flow">
+  <div class="flow-step">Connexion admin</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-step">Tableau de bord</div>
+  <div class="flow-arrow">→</div>
+  <div class="flow-branch">
+    <div class="flow-step">Alertes (écoutants + IA)</div>
+    <div class="flow-step">Validation des écoutants</div>
+    <div class="flow-step">Annuaire de ressources</div>
+  </div>
+  <div class="flow-note">
+    Chaque alerte, qu'elle vienne d'un écoutant ou du module de surveillance IA, arrive ici — le superviseur décide toujours de la suite, jamais un système automatique.
+  </div>
+</div>
+
+<div class="grid">
+
+  <!-- A0. Connexion admin -->
+  <div class="screen-card">
+    <div class="screen-label">A0 — Connexion admin</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w60" style="height:12px;margin:24px auto 20px;"></div>
+      <div class="card-row" style="gap:3px;margin-bottom:8px;">
+        <div class="txt-line w40" style="height:5px;"></div>
+        <div class="box" style="height:28px;"></div>
+      </div>
+      <div class="card-row" style="gap:3px;margin-bottom:8px;">
+        <div class="txt-line w40" style="height:5px;"></div>
+        <div class="box" style="height:28px;"></div>
+      </div>
+      <div style="flex:1;"></div>
+      <div class="btn">Se connecter</div>
+      <div class="footer-note">Accès restreint — équipe de supervision uniquement</div>
+    </div>
+  </div>
+
+  <!-- A1. Tableau de bord admin -->
+  <div class="screen-card">
+    <div class="screen-label">A1 — Tableau de bord</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="box" style="height:44px;background:var(--ink);border-style:solid;display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;font-weight:700;">🔴 2 alertes urgentes</div>
+      <div class="box" style="height:44px;margin-top:8px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">5 écoutants en attente de validation</div>
+      <div class="box" style="height:44px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">Annuaire de ressources</div>
+      <div class="box" style="height:44px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--muted);">Statistiques globales</div>
+      <div style="flex:1;"></div>
+      <div class="footer-note">Vue d'ensemble, données anonymisées</div>
+    </div>
+  </div>
+
+  <!-- A2. Liste des alertes -->
+  <div class="screen-card">
+    <div class="screen-label">A2 — Alertes</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="row" style="margin-bottom:8px;">
+        <div class="pill" style="border-style:solid;">Toutes</div>
+        <div class="pill">Écoutant</div>
+        <div class="pill">Module IA</div>
+      </div>
+      <div class="box" style="height:50px;border-color:var(--ink);border-style:solid;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="row" style="justify-content:space-between;"><div class="txt-line w40"></div><div class="pill" style="border-style:solid;padding:2px 6px;">urgent</div></div>
+        <div class="txt-line w80" style="opacity:.5;"></div>
+      </div>
+      <div class="box" style="height:50px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="row" style="justify-content:space-between;"><div class="txt-line w40"></div><div class="pill" style="padding:2px 6px;">à traiter</div></div>
+        <div class="txt-line w80" style="opacity:.5;"></div>
+      </div>
+      <div class="footer-note">Triées par gravité, source visible (écoutant ou IA)</div>
+    </div>
+  </div>
+
+  <!-- A3. Détail alerte -->
+  <div class="screen-card">
+    <div class="screen-label">A3 — Détail d'une alerte</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="row" style="justify-content:space-between;"><div class="txt-line w40"></div><div class="pill" style="border-style:solid;">urgent</div></div>
+      <div class="box" style="height:80px;margin-top:8px;padding:6px;font-size:9px;color:var(--muted);">Extrait de la conversation signalée...</div>
+      <div class="txt-line w60" style="margin-top:8px;"></div>
+      <div style="flex:1;"></div>
+      <div class="btn">Contacter l'ado</div>
+      <div class="btn ghost" style="margin-top:6px;">Orienter vers un psychologue</div>
+      <div class="btn ghost" style="margin-top:6px;">Clôturer l'alerte</div>
+    </div>
+  </div>
+
+  <!-- A4. Validation écoutants -->
+  <div class="screen-card">
+    <div class="screen-label">A4 — Validation des écoutants</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w60" style="margin-bottom:10px;"></div>
+      <div class="box" style="height:64px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w40"></div>
+        <div class="txt-line w80" style="opacity:.5;"></div>
+        <div class="row" style="margin-top:4px;"><div class="pill" style="border-style:solid;padding:2px 6px;">Valider</div><div class="pill" style="padding:2px 6px;">Refuser</div></div>
+      </div>
+      <div class="footer-note">Diplôme/attestation, institution partenaire, résultat formation, entretien</div>
+    </div>
+  </div>
+
+  <!-- A5. Annuaire (gestion) -->
+  <div class="screen-card">
+    <div class="screen-label">A5 — Gérer l'annuaire de ressources</div>
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="txt-line w60" style="margin-bottom:10px;"></div>
+      <div class="box" style="height:44px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w60"></div>
+      </div>
+      <div class="box" style="height:44px;padding:6px;display:flex;flex-direction:column;justify-content:center;gap:4px;">
+        <div class="txt-line w60"></div>
+      </div>
+      <div class="btn ghost" style="margin-top:8px;">+ Ajouter une ressource</div>
+      <div class="footer-note">Psychologues, ONG, centres — par ville</div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
