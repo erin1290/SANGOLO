@@ -74,7 +74,18 @@ class _InscriptionScreenState extends State<InscriptionScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Center(
-                        child: Image.asset('assets/images/logo_sangolo.png', width: 64),
+                        child: Container(
+                          width: 64, height: 64,
+                          decoration: BoxDecoration(
+                            color: AppColors.amber,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Center(
+                            child: Text('S', style: TextStyle(
+                              color: Colors.white, fontSize: 30, fontWeight: FontWeight.w700,
+                            )),
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),

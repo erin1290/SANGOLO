@@ -66,7 +66,7 @@ class _PlanningEcoutantScreenState extends State<PlanningEcoutantScreen> {
           child: ListView(
             padding: const EdgeInsets.all(18),
             children: [
-              const HeroBand(titre: 'Mon planning', sousTitre: 'Tes creneaux d\\'ecoute'),
+              const HeroBand(titre: 'Mon planning', sousTitre: 'Tes creneaux d\'ecoute'),
               const SizedBox(height: 14),
               if (_chargement)
                 const Padding(
@@ -76,7 +76,7 @@ class _PlanningEcoutantScreenState extends State<PlanningEcoutantScreen> {
               else if (_creneaux.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
-                  child: Text('Aucun creneau programme pour l\\'instant.',
+                  child: Text('Aucun creneau programme pour l\'instant.',
                       textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall),
                 )
               else

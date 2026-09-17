@@ -92,7 +92,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 itemCount: _messages.length,
                 itemBuilder: (context, i) {
                   final m = _messages[i];
-                  final mine = m['auteur'] == 'utilisateur';
+                  final mine = m.auteur == 'utilisateur';
                   return Align(
                     alignment: mine ? Alignment.centerRight : Alignment.centerLeft,
                     child: Container(
@@ -108,7 +108,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           bottomRight: Radius.circular(mine ? 4 : 16),
                         ),
                       ),
-                      child: Text(m['contenu']!,
+                      child: Text(m.contenu!,
                           style: TextStyle(
                             fontSize: 11.5,
                             color: mine ? const Color(0xFF3A2410) : AppColors.ink,

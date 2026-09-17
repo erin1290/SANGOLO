@@ -30,6 +30,12 @@ class ConversationScopingTests(TestCase):
             mot_de_passe_hash=self.user_ecoutant.password, statut=StatutEcoutant.VALIDE,
         )
 
+        self.user_ecoutant_2 = User.objects.create_user(username="ecoutant_b", password="motdepasse123")
+        self.ecoutant_2 = Ecoutant.objects.create(
+            user=self.user_ecoutant_2, nom_complet="Écoutant Test 2", email="e2@partenaire.org",
+            mot_de_passe_hash=self.user_ecoutant_2.password, statut=StatutEcoutant.VALIDE,
+        )
+
         self.conversation_a = Conversation.objects.create(
             utilisateur=self.ado_a, ecoutant=self.ecoutant, statut=StatutConversation.EN_COURS,
         )
@@ -64,7 +70,7 @@ class ConversationScopingTests(TestCase):
         n'assignait pas l'ado automatiquement.
         """
         self.client.force_authenticate(user=self.user_ado_a)
-        response = self.client.post("/api/messagerie/conversations/", {"ecoutant": self.ecoutant.id})
+        response = self.client.post("/api/messagerie/conversations/", {"ecoutant": self.ecoutant_2.id})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         nouvelle = Conversation.objects.get(id=response.data["id"])
         self.assertEqual(nouvelle.utilisateur, self.ado_a)

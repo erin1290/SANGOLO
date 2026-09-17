@@ -36,7 +36,7 @@ class SangoloApp extends StatelessWidget {
         '/ecoutant/escalade-confirmation': (_) => const ConfirmationEscaladeScreen(),
         '/ecoutant/profil': (_) => const ProfilEcoutantScreen(),
         '/ecoutant/parametres': (_) => const EcoutantParametresScreen(),
-        '/ecoutant/cercle-moderation': (_) => const CercleModerationScreen(),
+        '/ecoutant/cercle-moderation': (_) => CercleModerationScreen(cercleId: 0, cercleTheme: ''),
         '/ecoutant/planning': (_) => const PlanningEcoutantScreen(),
 
         // Point d'entrÃ©e unique du cÃ´tÃ© "supervision" â€” redirige ensuite

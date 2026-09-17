@@ -63,7 +63,7 @@ class _ConversationsEnAttenteScreenState extends State<ConversationsEnAttenteScr
               else if (_conversations.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
-                  child: Text('Aucune demande en attente pour l\\'instant.',
+                  child: Text('Aucune demande en attente pour l\'instant.',
                       textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall),
                 )
               else
@@ -352,7 +352,7 @@ class _CercleModerationScreenState extends State<CercleModerationScreen> {
                       children: [
                         Text(widget.cercleTheme, style: const TextStyle(
                           color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
-                        const Text('Groupe d\\'ecoute', style: TextStyle(color: Colors.white60, fontSize: 10)),
+                        const Text('Groupe d\'ecoute', style: TextStyle(color: Colors.white60, fontSize: 10)),
                       ],
                     ),
                   ),

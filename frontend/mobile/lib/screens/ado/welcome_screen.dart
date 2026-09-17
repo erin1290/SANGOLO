@@ -15,7 +15,18 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset('assets/images/logo_sangolo.png', width: 220),
+              Container(
+                width: 220, height: 80,
+                decoration: BoxDecoration(
+                  color: AppColors.ink,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Center(
+                  child: Text('SANGOLO', style: TextStyle(
+                    color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700,
+                  )),
+                ),
+              ),
               const SizedBox(height: 18),
               Text(
                 'Nous sommes\nlà pour toi',

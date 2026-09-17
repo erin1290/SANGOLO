@@ -105,7 +105,7 @@ class _CerclesListeScreenState extends State<CerclesListeScreen> {
             padding: const EdgeInsets.all(18),
             children: [
               const HeroBand(
-                titre: 'Cercles d\\'ecoute',
+                titre: 'Cercles d\'ecoute',
                 sousTitre: 'Groupes de parole confidentiels',
               ),
               const SizedBox(height: 14),
@@ -118,7 +118,7 @@ class _CerclesListeScreenState extends State<CerclesListeScreen> {
                 Padding(
                   padding: const EdgeInsets.only(top: 20),
                   child: Text(
-                    'Aucun cercle disponible pour l\\'instant.\nReviens plus tard !',
+                    'Aucun cercle disponible pour l\'instant.\nReviens plus tard !',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
@@ -349,7 +349,7 @@ class _CercleAdoChatScreenState extends State<CercleAdoChatScreen> {
                           ),
                         ),
                         const Text(
-                          'Groupe d\\'ecoute',
+                          'Groupe d\'ecoute',
                           style: TextStyle(color: Colors.white60, fontSize: 10),
                         ),
                       ],

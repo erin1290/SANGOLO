@@ -25,7 +25,7 @@ class EcoutantConnexionScreen extends StatelessWidget {
               const SizedBox(height: 16),
               ElevatedButton(onPressed: () {}, child: const Text('Se connecter')),
               const SizedBox(height: 10),
-              Text('Cree apres validation par l\\'association partenaire',
+              Text('Cree apres validation par l\'association partenaire',
                   textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
@@ -49,7 +49,7 @@ class EcoutantDashboardScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const HeroBand(
-                titre: 'Bonsoir Aline', sousTitre: 'Merci d\\'etre la ce soir',
+                titre: 'Bonsoir Aline', sousTitre: 'Merci d\'etre la ce soir',
                 trailing: StatusBadge('Disponible', color: Color(0x33FFFFFF)),
               ),
               const SectionLabel("Aujourd'hui"),
@@ -64,7 +64,7 @@ class EcoutantDashboardScreen extends StatelessWidget {
                 trailing: const StatusBadge('2'), onTap: () {},
               ),
               NavTile(
-                icon: Icons.groups_outlined, label: 'Mes cercles d\\'ecoute',
+                icon: Icons.groups_outlined, label: 'Mes cercles d\'ecoute',
                 sub: '2 groupes actifs', accent: AppColors.inkSurface, onTap: () {},
               ),
               NavTile(
@@ -72,7 +72,7 @@ class EcoutantDashboardScreen extends StatelessWidget {
                 sub: 'Creneaux a venir', accent: AppColors.amber, onTap: () {},
               ),
               const SizedBox(height: 8),
-              Center(child: Text('12 ados accompagnes -- 8h d\\'ecoute ce mois-ci',
+              Center(child: Text('12 ados accompagnes -- 8h d\'ecoute ce mois-ci',
                   style: Theme.of(context).textTheme.bodySmall)),
             ],
           ),
@@ -126,7 +126,7 @@ class _EscaladeScreenState extends State<EscaladeScreen> {
                   );
                 }),
               ),
-              const SectionLabel('Ce qui t\\'inquiete'),
+              const SectionLabel('Ce qui t\'inquiete'),
               TextField(
                 controller: _descriptionController, maxLines: 4,
                 decoration: const InputDecoration(hintText: 'Decrire brievement la situation...'),
@@ -164,7 +164,7 @@ class _EcoutantParametresScreenState extends State<EcoutantParametresScreen> {
   final _storage = const FlutterSecureStorage();
 
   static const _t = {
-    'fr': {'settings': 'Parametres', 'account': 'Reglages de ton compte', 'security': 'Securite', 'securitySub': 'Changer le mot de passe', 'notifications': 'Notifications', 'notifSub': 'Nouvelles demandes, alertes', 'language': 'Langue', 'help': 'Aide & formation', 'helpSub': 'Revoir le module d\\'ecoute', 'logout': 'Se deconnecter'},
+    'fr': {'settings': 'Parametres', 'account': 'Reglages de ton compte', 'security': 'Securite', 'securitySub': 'Changer le mot de passe', 'notifications': 'Notifications', 'notifSub': 'Nouvelles demandes, alertes', 'language': 'Langue', 'help': 'Aide & formation', 'helpSub': 'Revoir le module d\'ecoute', 'logout': 'Se deconnecter'},
     'en': {'settings': 'Settings', 'account': 'Account settings', 'security': 'Security', 'securitySub': 'Change password', 'notifications': 'Notifications', 'notifSub': 'New requests, alerts', 'language': 'Language', 'help': 'Help & training', 'helpSub': 'Review listening module', 'logout': 'Log out'},
   };
 
