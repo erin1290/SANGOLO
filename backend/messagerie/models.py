@@ -125,3 +125,13 @@ class MessageAdoAdo(models.Model):
 
     class Meta:
         ordering = ["date_envoi"]
+
+
+class EvaluationConversation(models.Model):
+    """Note laissée par l'ado à la clôture d'une conversation avec un écoutant."""
+    conversation = models.OneToOneField(
+        Conversation, on_delete=models.CASCADE, related_name="evaluation"
+    )
+    note = models.PositiveSmallIntegerField(help_text="Note de 1 à 5")
+    commentaire = models.TextField(blank=True)
+    date_evaluation = models.DateTimeField(auto_now_add=True)

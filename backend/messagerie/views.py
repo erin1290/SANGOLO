@@ -1,5 +1,7 @@
 from django.db.models import Q, Max, OuterRef, Subquery
 from rest_framework import viewsets, permissions, status
+from django.db import IntegrityError
+from rest_framework.exceptions import ValidationError
 from rest_framework.decorators import api_view, permission_classes as perm_decorator
 from rest_framework.response import Response
 from .models import (
@@ -187,7 +189,10 @@ class MembreCercleViewSet(viewsets.ModelViewSet):
         user = self.request.user
         cercle_id = self.request.query_params.get("cercle")
 
-        if hasattr(user, "superviseur_profile") or user.is_staff:
+        # Pour l'action create (POST rejoindre un cercle), autoriser tous les cercles actifs
+        if self.action == "create" and hasattr(user, "utilisateur_profile"):
+            qs = MembreCercle.objects.all()
+        elif hasattr(user, "superviseur_profile") or user.is_staff:
             qs = MembreCercle.objects.all()
         elif hasattr(user, "ecoutant_profile"):
             qs = MembreCercle.objects.filter(
@@ -204,13 +209,16 @@ class MembreCercleViewSet(viewsets.ModelViewSet):
         if cercle_id:
             qs = qs.filter(cercle_id=cercle_id)
         return qs
-
+        
     def perform_create(self, serializer):
         user = self.request.user
-        if hasattr(user, "utilisateur_profile"):
-            serializer.save(utilisateur=user.utilisateur_profile)
-        else:
-            serializer.save()
+        try:
+            if hasattr(user, "utilisateur_profile"):
+                serializer.save(utilisateur=user.utilisateur_profile)
+            else:
+                serializer.save()
+        except IntegrityError:
+            raise ValidationError({"detail": "Vous êtes déjà membre de ce cercle."})
 
     def destroy(self, request, *args, **kwargs):
         user = request.user
