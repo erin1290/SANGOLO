@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 
-// URL de l'API backend
-const API_BASE_URL = 'http://192.168.100.111:8000/api';
+// URL de l'API backend — configurable via .env (EXPO_PUBLIC_API_URL)
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.100.6:8000/api';
 
 export function getBaseUrl() {
   return API_BASE_URL;
@@ -100,6 +100,45 @@ export async function deconnexion() {
   await SecureStore.deleteItemAsync('user_nom');
   await SecureStore.deleteItemAsync('user_id');
   await SecureStore.deleteItemAsync('user_statut');
+}
+
+// --- Alertes ---
+
+export async function listerAlertes() {
+  const res = await fetch(`${getBaseUrl()}/alertes/alertes/`, { headers: await headers() });
+  if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
+  const data = await res.json();
+  return data.results ?? data;
+}
+
+export async function detailAlerte(alerteId) {
+  const res = await fetch(`${getBaseUrl()}/alertes/alertes/${alerteId}/`, { headers: await headers() });
+  if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function traiterAlerte(alerteId, { superviseurAssigne, statut, justification }) {
+  const body = {};
+  if (superviseurAssigne !== undefined) body.superviseur_assigne = superviseurAssigne;
+  if (statut !== undefined) body.statut = statut;
+  if (justification !== undefined) body.justification_traitement = justification;
+  const res = await fetch(`${getBaseUrl()}/alertes/alertes/${alerteId}/`, {
+    method: 'PATCH',
+    headers: { ...(await headers()), 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function creerReponseAlerte(alerteId, contenu) {
+  const res = await fetch(`${getBaseUrl()}/alertes/alertes/${alerteId}/reponse/`, {
+    method: 'POST',
+    headers: { ...(await headers()), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contenu }),
+  });
+  if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
+  return res.json();
 }
 
 // â”€â”€â”€ Journal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

@@ -15,7 +15,7 @@ export default function SuperviseurConnexionScreen({ navigation }) {
     setChargement(true);
     setErreur(null);
     try {
-      const baseUrl = 'http://192.168.100.111:8000/api';
+      const baseUrl = 'http://192.168.100.6:8000/api';
       const res = await fetch(`${baseUrl}/accounts/auth/superviseur/connexion/`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email.trim(), mot_de_passe: motDePasse }),

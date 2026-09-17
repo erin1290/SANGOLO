@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { colors, fonts } from '../../theme/colors';
 import { HeroBand, SectionLabel, NavTile, StatusBadge, PrimaryButton, GhostButton, ListItemCard } from '../../components/Shared';
-import { deconnexion, listerEcoutantsEnAttente, validerEcoutant, refuserEcoutant } from '../../services/apiService';
+import { deconnexion, listerEcoutantsEnAttente, validerEcoutant, refuserEcoutant, listerAlertes, detailAlerte, traiterAlerte } from '../../services/apiService';
 
 export function AdminConnexionScreen({ navigation }) {
   return (
@@ -36,9 +36,30 @@ export function AdminDashboardScreen({ navigation }) {
   );
 }
 
-export function AlertesListeScreen({ navigation }) {
+export function AlertesListeScreen({ navigation, route }) {
   const [filtre, setFiltre] = useState(0);
+  const [alertes, setAlertes] = useState([]);
+  const [chargement, setChargement] = useState(true);
+
+  const charger = async () => {
+    try {
+      const data = await listerAlertes();
+      setAlertes(data);
+    } catch (e) {
+      Alert.alert('Erreur', e.message);
+    } finally {
+      setChargement(false);
+    }
+  };
+
+  useEffect(() => { charger(); }, []);
+
   const labels = ['Toutes', 'Écoutant', 'Module IA'];
+  const filtresSources = [null, 'ecoutant', 'module_ia'];
+  const alertesFiltrees = filtresSources[filtre]
+    ? alertes.filter((a) => a.source === filtresSources[filtre])
+    : alertes;
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper, padding: 20 }}>
       <HeroBand titre="Alertes" sousTitre="Écoutant + module IA" />
@@ -50,29 +71,84 @@ export function AlertesListeScreen({ navigation }) {
         ))}
       </View>
       <View style={{ height: 12 }} />
-      <ListItemCard titre="mango_23" sousTitre="Signalé par Aline il y a 4 min"
-        tag={<StatusBadge text="urgent · écoutant" color={colors.coral} />}
-        onPress={() => navigation.navigate('AlerteDetail')} />
-      <ListItemCard titre="calme_02" sousTitre="Mot-clé de détresse détecté"
-        tag={<StatusBadge text="module IA" color={colors.amberDeep} />}
-        onPress={() => navigation.navigate('AlerteDetail')} />
-      <ListItemCard titre="etoile_v" sousTitre="Conseil écoutant à revoir"
-        tag={<StatusBadge text="à traiter" />} onPress={() => navigation.navigate('AlerteDetail')} />
+      {chargement ? <ActivityIndicator color={colors.ink} /> : alertesFiltrees.length === 0 ? (
+        <Text style={s.note}>Aucune alerte.</Text>
+      ) : alertesFiltrees.map((a) => (
+        <ListItemCard
+          key={a.id}
+          titre={a.pseudo_ado || `Alerte ${a.id}`}
+          sousTitre={`${a.gravite_display} · ${a.source_display}`}
+          tag={<StatusBadge
+            text={`${a.gravite}${a.statut === 'en_cours' ? ' · en cours' : ''}`}
+            color={a.gravite === 'urgent' ? colors.coral : a.gravite === 'moyen' ? colors.amber : colors.green}
+          />}
+          onPress={() => navigation.navigate('AlerteDetail', { alerteId: a.id })}
+        />
+      ))}
       <Text style={s.note}>Triées par gravité, source toujours visible</Text>
     </View>
   );
 }
 
-export function AlerteDetailScreen() {
+export function AlerteDetailScreen({ navigation, route }) {
+  const [alerte, setAlerte] = useState(null);
+  const [chargement, setChargement] = useState(true);
+  const [action, setAction] = useState('');
+
+  useEffect(() => {
+    const charger = async () => {
+      try {
+        const data = await detailAlerte(route.params?.alerteId);
+        setAlerte(data);
+      } catch (e) {
+        Alert.alert('Erreur', e.message);
+      } finally {
+        setChargement(false);
+      }
+    };
+    charger();
+  }, [route.params?.alerteId]);
+
+  const handleContacter = async () => {
+    if (!alerte?.conversation) return;
+    navigation.navigate('Chat', { conversationId: alerte.conversation });
+  };
+
+  const handleCloturer = async () => {
+    if (!alerte?.id) return;
+    setAction('traitement');
+    try {
+      await traiterAlerte(alerte.id, { statut: 'cloturee', justification: 'Traitée par le superviseur.' });
+      Alert.alert('Alerte clôturée');
+      navigation.goBack();
+    } catch (e) {
+      Alert.alert('Erreur', e.message);
+    } finally {
+      setAction('');
+    }
+  };
+
+  if (chargement || !alerte) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.paper }}>
+        <ActivityIndicator color={colors.ink} />
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper, padding: 20 }}>
-      <HeroBand titre="mango_23" sousTitre="Signalée par Aline · urgent" />
+      <HeroBand titre={alerte.pseudo_ado || `Alerte #${alerte.id}`} sousTitre={`${alerte.source_display} · ${alerte.gravite_display}`} />
       <View style={s.quoteBox}>
-        <Text style={s.quoteText}>"...je sais pas si je peux tenir encore..."</Text>
+        <Text style={s.quoteText}>Détection : {alerte.description}</Text>
       </View>
-      <PrimaryButton label="Contacter l'ado" onPress={() => {}} />
+      <PrimaryButton label="Contacter l'ado" onPress={handleContacter} />
       <GhostButton label="Orienter vers un psychologue" onPress={() => {}} />
-      <GhostButton label="Clôturer l'alerte" onPress={() => {}} />
+      <GhostButton
+        label={action === 'traitement' ? 'Traitement en cours...' : 'Clôturer l\'alerte'}
+        onPress={handleCloturer}
+        disabled={action === 'traitement'}
+      />
       <Text style={s.note}>Décision toujours humaine — jamais automatique</Text>
     </View>
   );
