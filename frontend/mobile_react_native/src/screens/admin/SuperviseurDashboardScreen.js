@@ -4,12 +4,23 @@ import * as SecureStore from 'expo-secure-store';
 import { useFocusEffect } from '@react-navigation/native';
 import { colors, fonts } from '../../theme/colors';
 import { HeroBand, NavTile, StatusBadge } from '../../components/Shared';
-import { getStatsSuperviseur } from '../../services/apiService';
+import { getStatsSuperviseur, listerAlertes } from '../../services/apiService';
 
 export default function SuperviseurDashboardScreen({ navigation }) {
   const [nom, setNom] = useState('Superviseur');
   const [stats, setStats] = useState(null);
+  const [alertesUrgentes, setAlertesUrgentes] = useState(0);
   const [chargement, setChargement] = useState(true);
+
+  useEffect(() => {
+    const chargerAlertes = async () => {
+      try {
+        const data = await listerAlertes();
+        setAlertesUrgentes(data.filter((a) => a.gravite === 'urgent').length);
+      } catch (e) { /* pas critique */ }
+    };
+    chargerAlertes();
+  }, []);
 
   useEffect(() => {
     SecureStore.getItemAsync('user_nom').then((v) => { if (v) setNom(v.split(' ')[0]); });
@@ -52,6 +63,9 @@ export default function SuperviseurDashboardScreen({ navigation }) {
           <NavTile icon={<Text style={{ fontSize: 18 }}>🧑‍🤝‍🧑</Text>} label="Écoutants en attente" sub="Candidatures à valider"
             accent={colors.amber} trailing={<StatusBadge text={String(stats?.ecoutants_en_attente ?? 0)} />}
             onPress={() => navigation.navigate('ValidationEcoutants')} />
+          <NavTile icon={<Text style={{ fontSize: 18 }}>⚠️</Text>} label="Alertes urgentes" sub="À traiter maintenant"
+            accent={colors.coral} trailing={<StatusBadge text={String(alertesUrgentes)} color={colors.coral} />}
+            onPress={() => navigation.navigate('AdminAlertes')} />
           <NavTile icon={<Text style={{ fontSize: 18 }}>💬</Text>} label="Conversations en cours" sub="Suivi en temps réel"
             accent={colors.green} trailing={<StatusBadge text={String(stats?.conversations_en_cours ?? 0)} />}
             onPress={() => navigation.navigate('ConversationsActives')} />

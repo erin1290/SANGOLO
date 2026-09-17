@@ -464,7 +464,7 @@ def refuser_ecoutant(request, ecoutant_id):
     ecoutant.save()
     return Response({"detail": "Candidature refusée."})
 
-    class InscriptionEcoutantSerializer(serializers.Serializer):
+class InscriptionEcoutantSerializer(serializers.Serializer):
     nom_complet = serializers.CharField(max_length=100)
     email = serializers.EmailField()
     mot_de_passe = serializers.CharField(write_only=True, min_length=8)
