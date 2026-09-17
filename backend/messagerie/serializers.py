@@ -47,7 +47,7 @@ class MembreCercleSerializer(serializers.ModelSerializer):
     class Meta:
         model = MembreCercle
         fields = ["id", "cercle", "utilisateur", "pseudo", "date_adhesion"]
-        read_only_fields = ["id", "date_adhesion"]
+        read_only_fields = ["id", "utilisateur", "date_adhesion"]
 
 
 class CercleEcouteSerializer(serializers.ModelSerializer):

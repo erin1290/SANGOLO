@@ -6,8 +6,10 @@ from .views import (
 )
 from .auth import (
     inscription_ado, connexion_ado,
-    connexion_ecoutant, connexion_superviseur,
+    connexion_ecoutant, connexion_superviseur, connexion_psychologue,
     changer_mot_de_passe,
+    stats_superviseur, lister_ecoutants_en_attente,
+    valider_ecoutant, refuser_ecoutant,
 )
 
 router = DefaultRouter()
@@ -21,5 +23,10 @@ urlpatterns = [
     path("auth/ado/connexion/", connexion_ado, name="connexion_ado"),
     path("auth/ecoutant/connexion/", connexion_ecoutant, name="connexion_ecoutant"),
     path("auth/superviseur/connexion/", connexion_superviseur, name="connexion_superviseur"),
+    path("auth/psychologue/connexion/", connexion_psychologue, name="connexion_psychologue"),
     path("auth/ado/changer-mot-de-passe/", changer_mot_de_passe, name="changer_mot_de_passe"),
+    path("superviseur/stats/", stats_superviseur, name="stats_superviseur"),
+    path("superviseur/ecoutants-en-attente/", lister_ecoutants_en_attente, name="lister_ecoutants_en_attente"),
+    path("superviseur/ecoutants/<int:ecoutant_id>/valider/", valider_ecoutant, name="valider_ecoutant"),
+    path("superviseur/ecoutants/<int:ecoutant_id>/refuser/", refuser_ecoutant, name="refuser_ecoutant"),
 ] + router.urls

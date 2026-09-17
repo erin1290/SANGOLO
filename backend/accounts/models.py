@@ -2,12 +2,12 @@
 App: accounts
 Les quatre profils utilisateurs de Sangolo.
 
-DÃ©cisions reprises du cahier des charges :
-- L'ado est anonyme : pseudo + Ã¢ge + mot de passe, aucune donnÃ©e identifiante.
-- L'Ã©coutant n'a pas d'inscription libre : son compte est crÃ©Ã© aprÃ¨s validation
-  (institution partenaire + formation + entretien + pÃ©riode probatoire).
-- Le superviseur/admin a un accÃ¨s restreint.
-- Le psychologue partenaire est le seul profil habilitÃ© aux sÃ©ances physiques.
+Décisions reprises du cahier des charges :
+- L'ado est anonyme : pseudo + âge + mot de passe, aucune donnée identifiante.
+- L'écoutant n'a pas d'inscription libre : son compte est créé après validation
+  (institution partenaire + formation + entretien + période probatoire).
+- Le superviseur/admin a un accès restreint.
+- Le psychologue partenaire est le seul profil habilité aux séances physiques.
 """
 from django.db import models
 from django.conf import settings
@@ -27,13 +27,12 @@ class Utilisateur(models.Model):
 
     securite_biometrique_active = models.BooleanField(
         default=False,
-        help_text="Double sÃ©curitÃ© Face ID + mot de passe activÃ©e par l'ado."
+        help_text="Double sécurité Face ID + mot de passe activée par l'ado."
     )
 
     date_creation = models.DateTimeField(auto_now_add=True)
     derniere_connexion = models.DateTimeField(null=True, blank=True)
 
-    # Consentement Ã  l'analyse du module de supervision IA (cf. app alertes)
     consentement_analyse_ia = models.BooleanField(default=False)
 
     def set_mot_de_passe(self, mot_de_passe_clair):
@@ -45,13 +44,13 @@ class Utilisateur(models.Model):
 
 class StatutEcoutant(models.TextChoices):
     EN_ATTENTE = "en_attente", "En attente de validation"
-    VALIDE = "valide", "ValidÃ©"
-    REFUSE = "refuse", "RefusÃ©"
-    PROBATOIRE = "probatoire", "PÃ©riode probatoire"
+    VALIDE = "valide", "Validé"
+    REFUSE = "refuse", "Refusé"
+    PROBATOIRE = "probatoire", "Période probatoire"
 
 
 class Ecoutant(models.Model):
-    """Volontaire formÃ©. Compte crÃ©Ã© aprÃ¨s validation, jamais en auto-inscription."""
+    """Volontaire formé. Compte créé après validation, jamais en auto-inscription."""
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
@@ -67,7 +66,7 @@ class Ecoutant(models.Model):
     )
     institution_partenaire = models.CharField(
         max_length=150, blank=True,
-        help_text="Fac de psychologie ou ONG ayant prÃ©-validÃ© le volontaire."
+        help_text="Fac de psychologie ou ONG ayant pré-validé le volontaire."
     )
     formation_validee = models.BooleanField(default=False)
     entretien_effectue = models.BooleanField(default=False)
@@ -82,6 +81,10 @@ class Ecoutant(models.Model):
         blank=True,
     )
 
+    sexe = models.CharField(max_length=1, choices=[("M", "Masculin"), ("F", "Féminin")], blank=True)
+    date_entretien = models.DateTimeField(null=True, blank=True)
+    lieu_entretien = models.CharField(max_length=200, blank=True)
+    email_invitation_envoyee = models.BooleanField(default=False)
     date_creation = models.DateTimeField(auto_now_add=True)
 
     def peut_accompagner_ado(self):
@@ -92,7 +95,7 @@ class Ecoutant(models.Model):
 
 
 class Superviseur(models.Model):
-    """Ã‰quipe de supervision : reÃ§oit les alertes, valide les Ã©coutants."""
+    """Équipe de supervision : reçoit les alertes, valide les écoutants."""
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
@@ -103,7 +106,7 @@ class Superviseur(models.Model):
     mot_de_passe_hash = models.CharField(max_length=255)
     est_psychologue = models.BooleanField(
         default=False,
-        help_text="Un superviseur peut aussi Ãªtre le psychologue rÃ©fÃ©rent."
+        help_text="Un superviseur peut aussi être le psychologue référent."
     )
     date_creation = models.DateTimeField(auto_now_add=True)
 
@@ -111,11 +114,17 @@ class Superviseur(models.Model):
         return self.nom_complet
 
 
+class StatutPsychologue(models.TextChoices):
+    EN_ATTENTE = "en_attente", "En attente de validation"
+    VALIDE = "valide", "Validé"
+    REFUSE = "refuse", "Refusé"
+
+
 class PsychologuePartenaire(models.Model):
     """
-    Seul profil habilitÃ© aux sÃ©ances physiques (toujours en lieu institutionnel).
-    Distinct de Superviseur : un psychologue partenaire n'a pas forcÃ©ment
-    accÃ¨s au tableau de bord de supervision.
+    Seul profil habilité aux séances physiques (toujours en lieu institutionnel).
+    Même logique d'inscription/validation que l'écoutant : auto-inscription,
+    entretien fixé par un superviseur, compte actif seulement après validation.
     """
 
     user = models.OneToOneField(
@@ -128,6 +137,21 @@ class PsychologuePartenaire(models.Model):
     email = models.EmailField(unique=True)
     telephone = models.CharField(max_length=30, blank=True)
     certifie = models.BooleanField(default=False)
+    sexe = models.CharField(max_length=1, choices=[("M", "Masculin"), ("F", "Féminin")], blank=True)
+    mot_de_passe_hash = models.CharField(max_length=255, blank=True)
+
+    statut = models.CharField(
+        max_length=20, choices=StatutPsychologue.choices,
+        default=StatutPsychologue.EN_ATTENTE
+    )
+    date_entretien = models.DateTimeField(null=True, blank=True)
+    lieu_entretien = models.CharField(max_length=200, blank=True)
+    email_invitation_envoyee = models.BooleanField(default=False)
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_validation = models.DateTimeField(null=True, blank=True)
+
+    def peut_se_connecter(self):
+        return self.statut == StatutPsychologue.VALIDE
 
     def __str__(self):
-        return f"{self.nom_complet} â€” {self.structure}"
+        return f"{self.nom_complet} — {self.structure}"

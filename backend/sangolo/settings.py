@@ -84,22 +84,11 @@ DATABASES = {
 }
 
 # ---- Temps reel : Django Channels ----
-try:
-    import channels_redis
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels_redis.core.RedisChannelLayer",
-            "CONFIG": {
-                "hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379")],
-            },
-        },
-    }
-except Exception:
-    CHANNEL_LAYERS = {
-        "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
-        },
-    }
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -131,3 +120,12 @@ USE_I18N = True
 USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Configuration email (Gmail)
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "ninariccierin@gmail.com"  # ← remplace par ton vrai email
+EMAIL_HOST_PASSWORD = "lvlgxrzoagaeutty"  # ← remplace par le mot de passe d'application (sans espaces)
+DEFAULT_FROM_EMAIL = "Sangolo <ninariccierin@gmail.com>"

@@ -100,7 +100,6 @@ def connexion_ecoutant(request):
         return Response(
             {"detail": "Compte non encore validé ou suspendu."}, status=403
         )
-
     if not ecoutant.user:
         return Response(
             {"detail": "Aucun compte associé. Contacte ton superviseur."},
@@ -125,17 +124,46 @@ def connexion_ecoutant(request):
 def connexion_superviseur(request):
     email = request.data.get("email")
     mot_de_passe = request.data.get("mot_de_passe")
+
     try:
         superviseur = Superviseur.objects.get(email=email)
     except Superviseur.DoesNotExist:
-        return Response({"detail": "Identifiants incorrects."}, status=401)
+        return Response(
+            {"detail": "Identifiants incorrects."},
+            status=401
+        )
 
-    user = authenticate(username=superviseur.user.username, password=mot_de_passe)
+    print("DEBUG SUPERVISEUR =", superviseur)
+    print("DEBUG USER =", superviseur.user)
+
+    # Vérifier qu'un compte utilisateur est associé
+    if not superviseur.user:
+        return Response(
+            {
+                "detail": "Aucun compte utilisateur associé à ce superviseur. Contacte l'administration."
+            },
+            status=400
+        )
+
+    user = authenticate(
+        username=superviseur.user.username,
+        password=mot_de_passe
+    )
+
     if user is None:
-        return Response({"detail": "Identifiants incorrects."}, status=401)
+        return Response(
+            {"detail": "Identifiants incorrects."},
+            status=401
+        )
 
     token, _ = Token.objects.get_or_create(user=user)
-    return Response({"token": token.key, "nom_complet": superviseur.nom_complet})
+
+    return Response({
+        "token": token.key,
+        "nom_complet": superviseur.nom_complet
+    })
+
+
 
 @api_view(["POST"])
 @permission_classes([permissions.IsAuthenticated])
@@ -152,3 +180,388 @@ def changer_mot_de_passe(request):
     user.set_password(nouveau_mot_de_passe)
     user.save()
     return Response({"detail": "Mot de passe changé avec succès."})
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def connexion_psychologue(request):
+    email = request.data.get("email")
+    mot_de_passe = request.data.get("mot_de_passe")
+    try:
+        psy = PsychologuePartenaire.objects.get(email=email)
+    except PsychologuePartenaire.DoesNotExist:
+        return Response({"detail": "Identifiants incorrects."}, status=401)
+
+    if not psy.peut_se_connecter():
+        return Response({"detail": "Ton compte est en attente de validation."}, status=403)
+    if not psy.user:
+        return Response({"detail": "Aucun compte associé."}, status=400)
+
+    user = authenticate(username=psy.user.username, password=mot_de_passe)
+    if user is None:
+        return Response({"detail": "Identifiants incorrects."}, status=401)
+
+    token, _ = Token.objects.get_or_create(user=user)
+    return Response({
+        "token": token.key,
+        "nom_complet": psy.nom_complet,
+        "id": psy.id,
+        "structure": psy.structure,
+        "certifie": psy.certifie,
+    })
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def stats_superviseur(request):
+    """Chiffres clés pour le dashboard superviseur."""
+    user = request.user
+    if not (hasattr(user, "superviseur_profile") or user.is_staff):
+        return Response({"detail": "Réservé aux superviseurs."}, status=403)
+
+    from messagerie.models import Conversation, CercleEcoute, StatutConversation
+
+    return Response({
+        "ecoutants_en_attente": Ecoutant.objects.filter(statut="en_attente").count(),
+        "ecoutants_valides": Ecoutant.objects.filter(statut="valide").count(),
+        "conversations_en_cours": Conversation.objects.filter(statut=StatutConversation.EN_COURS).count(),
+        "conversations_en_attente": Conversation.objects.filter(statut=StatutConversation.EN_ATTENTE).count(),
+        "cercles_actifs": CercleEcoute.objects.filter(actif=True).count(),
+        "ados_inscrits": Utilisateur.objects.count(),
+    })
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def lister_ecoutants_en_attente(request):
+    user = request.user
+    if not (hasattr(user, "superviseur_profile") or user.is_staff):
+        return Response({"detail": "Réservé aux superviseurs."}, status=403)
+
+    ecoutants = Ecoutant.objects.filter(statut="en_attente").values(
+        "id", "nom_complet", "email", "institution_partenaire",
+        "formation_validee", "entretien_effectue", "date_creation",
+    )
+    return Response(list(ecoutants))
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def valider_ecoutant(request, ecoutant_id):
+    user = request.user
+    if not (hasattr(user, "superviseur_profile") or user.is_staff):
+        return Response({"detail": "Réservé aux superviseurs."}, status=403)
+
+    try:
+        ecoutant = Ecoutant.objects.get(id=ecoutant_id, statut="en_attente")
+    except Ecoutant.DoesNotExist:
+        return Response({"detail": "Écoutant introuvable ou déjà traité."}, status=404)
+
+    from django.db import transaction, IntegrityError
+    from django.utils import timezone
+    import secrets
+
+    try:
+        with transaction.atomic():
+            mot_de_passe_temp = None
+            if not ecoutant.user:
+                # Cas d'un écoutant créé à l'ancienne (via l'admin Django, sans auto-inscription)
+                mot_de_passe_temp = secrets.token_urlsafe(8)
+                django_user, _ = User.objects.get_or_create(
+                    username=f"ecoutant_{ecoutant.id}",
+                    defaults={"email": ecoutant.email},
+                )
+                django_user.set_password(mot_de_passe_temp)
+                django_user.save()
+                ecoutant.user = django_user
+
+            ecoutant.statut = "valide"
+            ecoutant.date_validation = timezone.now()
+            ecoutant.save()
+    except IntegrityError:
+        return Response({"detail": "Cet écoutant a déjà été traité."}, status=409)
+
+    reponse = {"detail": "Écoutant validé.", "email": ecoutant.email}
+    if mot_de_passe_temp:
+        reponse["mot_de_passe_temporaire"] = mot_de_passe_temp
+    return Response(reponse)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def valider_psychologue(request, psy_id):
+    user = request.user
+    if not (hasattr(user, "superviseur_profile") or user.is_staff):
+        return Response({"detail": "Réservé aux superviseurs."}, status=403)
+
+    try:
+        psy = PsychologuePartenaire.objects.get(id=psy_id, statut="en_attente")
+    except PsychologuePartenaire.DoesNotExist:
+        return Response({"detail": "Psychologue introuvable ou déjà traité."}, status=404)
+
+    from django.utils import timezone
+    psy.statut = "valide"
+    psy.date_validation = timezone.now()
+    psy.save()
+    return Response({"detail": "Psychologue validé.", "email": psy.email})
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def refuser_psychologue(request, psy_id):
+    user = request.user
+    if not (hasattr(user, "superviseur_profile") or user.is_staff):
+        return Response({"detail": "Réservé aux superviseurs."}, status=403)
+
+    try:
+        psy = PsychologuePartenaire.objects.get(id=psy_id, statut="en_attente")
+    except PsychologuePartenaire.DoesNotExist:
+        return Response({"detail": "Psychologue introuvable ou déjà traité."}, status=404)
+
+    psy.statut = "refuse"
+    psy.save()
+    return Response({"detail": "Candidature refusée."})
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def lister_psychologues_en_attente(request):
+    user = request.user
+    if not (hasattr(user, "superviseur_profile") or user.is_staff):
+        return Response({"detail": "Réservé aux superviseurs."}, status=403)
+
+    psys = PsychologuePartenaire.objects.filter(statut="en_attente").values(
+        "id", "nom_complet", "email", "structure", "ville", "sexe", "date_creation",
+    )
+    return Response(list(psys))
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def annuaire_utilisateurs(request):
+    """Annuaire global des profils pour le dashboard superviseur."""
+
+    user = request.user
+
+    if not (hasattr(user, "superviseur_profile") or user.is_staff):
+        return Response(
+            {"detail": "Réservé aux superviseurs."},
+            status=403
+        )
+
+    utilisateurs = []
+
+    # -----------------------------------------
+    # ADOS
+    # -----------------------------------------
+    for ado in Utilisateur.objects.select_related("user").all():
+        utilisateurs.append({
+            "id": ado.id,
+            "type_profil": "ado",
+            "nom": ado.pseudo,
+            "email": None,
+            "age": ado.age,
+            "date_entree": ado.date_creation,
+            "statut": "actif",
+        })
+
+    # -----------------------------------------
+    # ÉCOUTANTS
+    # -----------------------------------------
+    for ecoutant in Ecoutant.objects.select_related("user").all():
+        utilisateurs.append({
+            "id": ecoutant.id,
+            "type_profil": "ecoutant",
+            "nom": ecoutant.nom_complet,
+            "email": ecoutant.email,
+            "age": None,
+            "date_entree": ecoutant.date_creation,
+            "statut": ecoutant.statut,
+            "institution": ecoutant.institution_partenaire,
+            "formation_validee": ecoutant.formation_validee,
+            "entretien_effectue": ecoutant.entretien_effectue,
+            "date_validation": ecoutant.date_validation,
+            "disponible": ecoutant.disponible,
+            "langue": ecoutant.langue_preferee,
+        })
+
+    # -----------------------------------------
+    # PSYCHOLOGUES
+    # -----------------------------------------
+    for psy in PsychologuePartenaire.objects.select_related("user").all():
+        utilisateurs.append({
+            "id": psy.id,
+            "type_profil": "psychologue",
+            "nom": psy.nom_complet,
+            "email": psy.email,
+            "age": None,
+            "date_entree": None,
+            "statut": "certifie" if psy.certifie else "non_certifie",
+            "structure": psy.structure,
+            "ville": psy.ville,
+            "telephone": psy.telephone,
+            "certifie": psy.certifie,
+        })
+
+    # -----------------------------------------
+    # SUPERVISEURS
+    # -----------------------------------------
+    for superviseur in Superviseur.objects.select_related("user").all():
+        utilisateurs.append({
+            "id": superviseur.id,
+            "type_profil": "superviseur",
+            "nom": superviseur.nom_complet,
+            "email": superviseur.email,
+            "age": None,
+            "date_entree": superviseur.date_creation,
+            "statut": "actif",
+            "est_psychologue": superviseur.est_psychologue,
+        })
+
+    # Recherche
+    recherche = request.query_params.get("q", "").strip().lower()
+
+    if recherche:
+        utilisateurs = [
+            u for u in utilisateurs
+            if recherche in (u.get("nom") or "").lower()
+            or recherche in (u.get("email") or "").lower()
+        ]
+
+    # Filtre par profil
+    type_profil = request.query_params.get("type")
+
+    if type_profil and type_profil != "tous":
+        utilisateurs = [
+            u for u in utilisateurs
+            if u["type_profil"] == type_profil
+        ]
+
+    # Tri par date d'entrée quand disponible
+    utilisateurs.sort(
+        key=lambda u: u.get("date_entree") or "",
+        reverse=True
+    )
+
+    return Response({
+        "total": len(utilisateurs),
+        "utilisateurs": utilisateurs,
+    })
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def refuser_ecoutant(request, ecoutant_id):
+    user = request.user
+    if not (hasattr(user, "superviseur_profile") or user.is_staff):
+        return Response({"detail": "Réservé aux superviseurs."}, status=403)
+
+    try:
+        ecoutant = Ecoutant.objects.get(id=ecoutant_id, statut="en_attente")
+    except Ecoutant.DoesNotExist:
+        return Response({"detail": "Écoutant introuvable ou déjà traité."}, status=404)
+
+    ecoutant.statut = "refuse"
+    ecoutant.save()
+    return Response({"detail": "Candidature refusée."})
+
+    class InscriptionEcoutantSerializer(serializers.Serializer):
+    nom_complet = serializers.CharField(max_length=100)
+    email = serializers.EmailField()
+    mot_de_passe = serializers.CharField(write_only=True, min_length=8)
+    confirmation_mot_de_passe = serializers.CharField(write_only=True, min_length=8)
+    institution_partenaire = serializers.CharField(max_length=150, required=False, allow_blank=True)
+    sexe = serializers.ChoiceField(choices=[("M", "Masculin"), ("F", "Féminin")])
+
+    def validate_email(self, value):
+        if Ecoutant.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Cet email est déjà utilisé.")
+        return value
+
+    def validate(self, data):
+        if data["mot_de_passe"] != data["confirmation_mot_de_passe"]:
+            raise serializers.ValidationError({"confirmation_mot_de_passe": "Les mots de passe ne correspondent pas."})
+        return data
+
+    def create(self, validated_data):
+        ecoutant = Ecoutant.objects.create(
+            nom_complet=validated_data["nom_complet"],
+            email=validated_data["email"],
+            mot_de_passe_hash="",  # posé après création du User Django
+            institution_partenaire=validated_data.get("institution_partenaire", ""),
+            sexe=validated_data["sexe"],
+            statut="en_attente",
+        )
+        django_user = User.objects.create_user(
+            username=f"ecoutant_{ecoutant.id}",
+            email=ecoutant.email,
+            password=validated_data["mot_de_passe"],
+        )
+        ecoutant.user = django_user
+        ecoutant.mot_de_passe_hash = django_user.password
+        ecoutant.save()
+        return ecoutant
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def inscription_ecoutant(request):
+    serializer = InscriptionEcoutantSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    ecoutant = serializer.save()
+    return Response(
+        {"detail": "Ta demande a bien été envoyée. Un superviseur va l'examiner et te contactera par email pour fixer un entretien.", "id": ecoutant.id},
+        status=status.HTTP_201_CREATED,
+    )
+
+
+class InscriptionPsychologueSerializer(serializers.Serializer):
+    nom_complet = serializers.CharField(max_length=100)
+    email = serializers.EmailField()
+    mot_de_passe = serializers.CharField(write_only=True, min_length=8)
+    confirmation_mot_de_passe = serializers.CharField(write_only=True, min_length=8)
+    structure = serializers.CharField(max_length=150)
+    ville = serializers.CharField(max_length=80)
+    telephone = serializers.CharField(max_length=30, required=False, allow_blank=True)
+    sexe = serializers.ChoiceField(choices=[("M", "Masculin"), ("F", "Féminin")])
+
+    def validate_email(self, value):
+        if PsychologuePartenaire.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Cet email est déjà utilisé.")
+        return value
+
+    def validate(self, data):
+        if data["mot_de_passe"] != data["confirmation_mot_de_passe"]:
+            raise serializers.ValidationError({"confirmation_mot_de_passe": "Les mots de passe ne correspondent pas."})
+        return data
+
+    def create(self, validated_data):
+        psy = PsychologuePartenaire.objects.create(
+            nom_complet=validated_data["nom_complet"],
+            email=validated_data["email"],
+            structure=validated_data["structure"],
+            ville=validated_data["ville"],
+            telephone=validated_data.get("telephone", ""),
+            sexe=validated_data["sexe"],
+            statut="en_attente",
+        )
+        django_user = User.objects.create_user(
+            username=f"psychologue_{psy.id}",
+            email=psy.email,
+            password=validated_data["mot_de_passe"],
+        )
+        psy.user = django_user
+        psy.mot_de_passe_hash = django_user.password
+        psy.save()
+        return psy
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def inscription_psychologue(request):
+    serializer = InscriptionPsychologueSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    psy = serializer.save()
+    return Response(
+        {"detail": "Ta demande a bien été envoyée. Un superviseur va l'examiner et te contactera par email pour fixer un entretien.", "id": psy.id},
+        status=status.HTTP_201_CREATED,
+    )
