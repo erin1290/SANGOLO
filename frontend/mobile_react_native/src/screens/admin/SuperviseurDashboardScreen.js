@@ -5,8 +5,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { colors, fonts } from '../../theme/colors';
 import { HeroBand, NavTile, StatusBadge } from '../../components/Shared';
 import { getStatsSuperviseur, listerAlertes } from '../../services/apiService';
+import { useLangue } from '../../context/LanguageContext';
 
 export default function SuperviseurDashboardScreen({ navigation }) {
+  const { langue } = useLangue();
+  const t = langue === 'en' ? { hello: 'Hello', overview: 'Supervision overview', listenerSub: 'Applications to validate', alertSub: 'To handle now', activeSub: 'Real-time follow-up', pendingSub: 'No listener assigned', circleSub: 'Active listening groups', teenSub: 'Total on the platform', logout: 'Log out' } : { hello: 'Bonjour', overview: 'Vue de supervision', listenerSub: 'Candidatures à valider', alertSub: 'À traiter maintenant', activeSub: 'Suivi en temps réel', pendingSub: 'Sans écoutant assigné', circleSub: "Groupes d'écoute en cours", teenSub: 'Total sur la plateforme', logout: 'Se déconnecter' };
   const [nom, setNom] = useState('Superviseur');
   const [stats, setStats] = useState(null);
   const [alertesUrgentes, setAlertesUrgentes] = useState(0);
@@ -52,8 +55,8 @@ export default function SuperviseurDashboardScreen({ navigation }) {
       <View style={s.statusBar} />
       <View style={s.header}>
         <View>
-          <Text style={s.greeting}>Bonjour {nom} 👋</Text>
-          <Text style={s.subGreeting}>Vue de supervision</Text>
+          <Text style={s.greeting}>{t.hello} {nom} 👋</Text>
+          <Text style={s.subGreeting}>{t.overview}</Text>
         </View>
       </View>
       {chargement ? (
@@ -62,27 +65,27 @@ export default function SuperviseurDashboardScreen({ navigation }) {
         </View>
       ) : (
         <ScrollView contentContainerStyle={s.content}>
-          <NavTile icon={<Text style={{ fontSize: 18 }}>🧑‍🤝‍🧑</Text>} label="Écoutants en attente" sub="Candidatures à valider"
+          <NavTile icon={<Text style={{ fontSize: 18 }}>🧑‍🤝‍🧑</Text>} label="Écoutants en attente" sub={t.listenerSub}
             accent={colors.amber} trailing={<StatusBadge text={String(stats?.ecoutants_en_attente ?? 0)} />}
             onPress={() => navigation.navigate('ValidationEcoutants')} />
-          <NavTile icon={<Text style={{ fontSize: 18 }}>⚠️</Text>} label="Alertes urgentes" sub="À traiter maintenant"
+          <NavTile icon={<Text style={{ fontSize: 18 }}>⚠️</Text>} label="Alertes urgentes" sub={t.alertSub}
             accent={colors.coral} trailing={<StatusBadge text={String(alertesUrgentes)} color={colors.coral} />}
             onPress={() => navigation.navigate('AdminAlertes')} />
-          <NavTile icon={<Text style={{ fontSize: 18 }}>💬</Text>} label="Conversations en cours" sub="Suivi en temps réel"
+          <NavTile icon={<Text style={{ fontSize: 18 }}>💬</Text>} label="Conversations en cours" sub={t.activeSub}
             accent={colors.green} trailing={<StatusBadge text={String(stats?.conversations_en_cours ?? 0)} />}
             onPress={() => navigation.navigate('ConversationsActives')} />
-          <NavTile icon={<Text style={{ fontSize: 18 }}>⏳</Text>} label="Conversations en attente" sub="Sans écoutant assigné"
+          <NavTile icon={<Text style={{ fontSize: 18 }}>⏳</Text>} label="Conversations en attente" sub={t.pendingSub}
             accent={colors.amberDeep} trailing={<StatusBadge text={String(stats?.conversations_en_attente ?? 0)} />}
             onPress={() => navigation.navigate('ConversationsAttente')} />
-          <NavTile icon={<Text style={{ fontSize: 18 }}>🔵</Text>} label="Cercles actifs" sub="Groupes d'écoute en cours"
+          <NavTile icon={<Text style={{ fontSize: 18 }}>🔵</Text>} label="Cercles actifs" sub={t.circleSub}
             accent={colors.inkSurface} trailing={<StatusBadge text={String(stats?.cercles_actifs ?? 0)} />}
             onPress={() => navigation.navigate('CerclesActifs')} />
-          <NavTile icon={<Text style={{ fontSize: 18 }}>📊</Text>} label="Ados inscrits" sub="Total sur la plateforme"
+          <NavTile icon={<Text style={{ fontSize: 18 }}>📊</Text>} label="Ados inscrits" sub={t.teenSub}
             accent={colors.ink} trailing={<StatusBadge text={String(stats?.ados_inscrits ?? 0)} />}
             onPress={() => navigation.navigate('AdosInscrits')} />
           <View style={{ flex: 1 }} />
           <TouchableOpacity style={s.logoutBtn} onPress={handleLogout}>
-            <Text style={s.logoutText}>Se déconnecter</Text>
+            <Text style={s.logoutText}>{t.logout}</Text>
           </TouchableOpacity>
         </ScrollView>
       )}

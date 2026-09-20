@@ -4,10 +4,15 @@ import { colors, fonts } from '../../theme/colors';
 import { ChatService } from '../../services/chatService';
 import { listerMessages, envoyerMessage, getBaseUrl } from '../../services/apiService';
 import * as SecureStore from 'expo-secure-store';
+import { useLangue } from '../../context/LanguageContext';
 
 export default function ChatScreen({ route, navigation }) {
   const conversationId = route?.params?.conversationId;
-  const ecoutantNom = route?.params?.ecoutantNom || 'Écoutant';
+  const { langue } = useLangue();
+  const t = langue === 'en'
+    ? { listener: 'Listener', online: 'Online', loading: 'Loading messages...', empty: 'Waiting for a listener...\n\nSomeone will reply soon.', input: 'Write a message...' }
+    : { listener: 'Écoutant', online: 'En ligne', loading: 'Chargement des messages...', empty: "En attente d'un écoutant...\n\nQuelqu'un va te répondre bientôt.", input: 'Écrire un message...' };
+  const ecoutantNom = route?.params?.ecoutantNom || t.listener;
   const [messages, setMessages] = useState([]);
   const [texte, setTexte] = useState('');
   const [chargement, setChargement] = useState(true);
@@ -93,17 +98,17 @@ export default function ChatScreen({ route, navigation }) {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={s.headerName}>{ecoutantNom}</Text>
-          <Text style={s.headerStatus}>En ligne</Text>
+          <Text style={s.headerStatus}>{t.online}</Text>
         </View>
       </View>
       {chargement ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft }}>Chargement des messages...</Text>
+          <Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft }}>{t.loading}</Text>
         </View>
       ) : messages.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30 }}>
           <Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft, textAlign: 'center' }}>
-            En attente d'un écoutant...{'\n\n'}Quelqu'un va te répondre bientôt.
+            {t.empty}
           </Text>
         </View>
       ) : (
@@ -126,7 +131,7 @@ export default function ChatScreen({ route, navigation }) {
       <View style={s.inputRow}>
         <TextInput
           style={s.input}
-          placeholder="Écrire un message..."
+          placeholder={t.input}
           value={texte}
           onChangeText={setTexte}
           multiline

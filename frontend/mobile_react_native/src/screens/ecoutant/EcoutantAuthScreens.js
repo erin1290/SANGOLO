@@ -28,6 +28,7 @@ const TRADUCTIONS = {
     creerCercleSub: 'Nouveau groupe d\'écoute',
     parametres: 'Paramètres',
     parametresSub: 'Réglages du compte',
+    stats: 'conversation(s) · non lu(s)',
   },
   en: {
     bonsoir: 'Good evening',
@@ -49,6 +50,7 @@ const TRADUCTIONS = {
     creerCercleSub: 'New listening group',
     parametres: 'Settings',
     parametresSub: 'Account settings',
+    stats: 'conversation(s) · unread',
   },
 };
 
@@ -190,7 +192,7 @@ export function EcoutantDashboardScreen({ navigation }) {
           accent={colors.green} onPress={() => navigation.navigate('CreerCercle')} />
         <NavTile icon={<Text style={{ fontSize: 18 }}>⚙️</Text>} label={t.parametres} sub={t.parametresSub}
           accent={colors.inkSurface} onPress={() => navigation.navigate('EcoutantParametres')} />
-        <Text style={s.stats}>{stats.enAttente + stats.enCours} conversation(s) · {stats.nonLus} non lu(s)</Text>
+        <Text style={s.stats}>{stats.enAttente + stats.enCours} {t.stats.replace(langue === 'en' ? 'unread' : 'non lu(s)', String(stats.nonLus))}</Text>
       </View>
     </View>
   );

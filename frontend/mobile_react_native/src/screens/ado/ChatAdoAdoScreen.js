@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { colors, fonts } from '../../theme/colors';
+import { useLangue } from '../../context/LanguageContext';
 import { listerMessagesAdo, envoyerMessageAdo, getBaseUrl } from '../../services/apiService';
 import * as SecureStore from 'expo-secure-store';
 
 export default function ChatAdoAdoScreen({ route, navigation }) {
+  const { langue } = useLangue();
+  const t = langue === 'en' ? { peer: 'Peer', loading: 'Loading...', input: 'Write a message...' } : { peer: 'Pair', loading: 'Chargement...', input: 'Écrire un message...' };
   const { conversationId, destinatairePseudo } = route.params;
   const [messages, setMessages] = useState([]);
   const [texte, setTexte] = useState('');
@@ -87,12 +90,12 @@ export default function ChatAdoAdoScreen({ route, navigation }) {
         </View>
         <View style={{ flex: 1 }}>
           <Text style={s.headerName}>{destinatairePseudo}</Text>
-          <Text style={s.headerStatus}>Pair</Text>
+          <Text style={s.headerStatus}>{t.peer}</Text>
         </View>
       </View>
       {chargement ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft }}>Chargement...</Text>
+          <Text style={{ fontFamily: fonts.body, fontSize: 14, color: colors.inkSoft }}>{t.loading}</Text>
         </View>
       ) : messages.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 30 }}>
@@ -123,7 +126,7 @@ export default function ChatAdoAdoScreen({ route, navigation }) {
       <View style={s.inputRow}>
         <TextInput
           style={s.input}
-          placeholder="Écrire un message..."
+          placeholder={t.input}
           value={texte}
           onChangeText={setTexte}
           multiline
