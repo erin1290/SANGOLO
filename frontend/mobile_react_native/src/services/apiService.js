@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
 
 // URL de l'API backend — configurable via .env (EXPO_PUBLIC_API_URL)
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.100.6:8000/api';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.173:8000/api';
 
 export function getBaseUrl() {
   return API_BASE_URL;
@@ -49,6 +49,15 @@ export async function connexionEcoutant({ email, motDePasse }) {
   return handleAuthResponse(res);
 }
 
+export async function connexionSuperviseur({ email, motDePasse }) {
+  const res = await fetch(`${getBaseUrl()}/accounts/auth/superviseur/connexion/`, {
+    method: 'POST',
+    headers: await headers(false),
+    body: JSON.stringify({ email, mot_de_passe: motDePasse }),
+  });
+  return handleAuthResponse(res);
+}
+
 export async function getStatsSuperviseur() {
   const res = await fetch(`${getBaseUrl()}/accounts/superviseur/stats/`, { headers: await headers() });
   if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
@@ -57,6 +66,12 @@ export async function getStatsSuperviseur() {
 
 export async function listerEcoutantsEnAttente() {
   const res = await fetch(`${getBaseUrl()}/accounts/superviseur/ecoutants-en-attente/`, { headers: await headers() });
+  if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function listerAdosSupervision() {
+  const res = await fetch(`${getBaseUrl()}/accounts/superviseur/ados/`, { headers: await headers() });
   if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
   return res.json();
 }
@@ -78,7 +93,15 @@ export async function refuserEcoutant(ecoutantId) {
 }
 
 async function handleAuthResponse(res) {
-  const data = await res.json();
+  const contenu = await res.text();
+  let data;
+  try {
+    data = contenu ? JSON.parse(contenu) : {};
+  } catch {
+    throw new ApiException(
+      'Le serveur a renvoyé une réponse invalide. Vérifie que le backend est redémarré et que l’adresse IP configurée est correcte.'
+    );
+  }
   if (res.ok) {
     await SecureStore.setItemAsync('auth_token', data.token);
     if (data.pseudo) await SecureStore.setItemAsync('user_pseudo', data.pseudo);
@@ -117,11 +140,12 @@ export async function detailAlerte(alerteId) {
   return res.json();
 }
 
-export async function traiterAlerte(alerteId, { superviseurAssigne, statut, justification }) {
+export async function traiterAlerte(alerteId, { superviseurAssigne, statut, justification, verdictIa }) {
   const body = {};
   if (superviseurAssigne !== undefined) body.superviseur_assigne = superviseurAssigne;
   if (statut !== undefined) body.statut = statut;
   if (justification !== undefined) body.justification_traitement = justification;
+  if (verdictIa !== undefined) body.verdict_ia = verdictIa;
   const res = await fetch(`${getBaseUrl()}/alertes/alertes/${alerteId}/`, {
     method: 'PATCH',
     headers: { ...(await headers()), 'Content-Type': 'application/json' },
@@ -136,6 +160,28 @@ export async function creerReponseAlerte(alerteId, contenu) {
     method: 'POST',
     headers: { ...(await headers()), 'Content-Type': 'application/json' },
     body: JSON.stringify({ contenu }),
+  });
+  if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function contacterAdoDepuisAlerte(alerteId) {
+  const res = await fetch(`${getBaseUrl()}/alertes/alertes/${alerteId}/contacter-ado/`, {
+    method: 'POST', headers: await headers(),
+  });
+  if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function listerPsychologuesDisponibles() {
+  const res = await fetch(`${getBaseUrl()}/alertes/alertes/psychologues-disponibles/`, { headers: await headers() });
+  if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
+  return res.json();
+}
+
+export async function orienterAlerteVersPsychologue(alerteId, psychologueId) {
+  const res = await fetch(`${getBaseUrl()}/alertes/alertes/${alerteId}/orienter-vers-psychologue/`, {
+    method: 'POST', headers: await headers(), body: JSON.stringify({ psychologue_id: psychologueId }),
   });
   if (!res.ok) throw new ApiException(`Erreur ${res.status}`);
   return res.json();

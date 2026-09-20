@@ -15,14 +15,15 @@ class MessageSerializer(serializers.ModelSerializer):
 class ConversationSerializer(serializers.ModelSerializer):
     messages = MessageSerializer(many=True, read_only=True)
     utilisateur_pseudo = serializers.CharField(source='utilisateur.pseudo', read_only=True)
+    superviseur_nom = serializers.CharField(source='superviseur.nom_complet', read_only=True, default=None)
 
     class Meta:
         model = Conversation
         fields = [
-            "id", "utilisateur", "utilisateur_pseudo", "ecoutant", "statut",
+            "id", "utilisateur", "utilisateur_pseudo", "ecoutant", "superviseur", "superviseur_nom", "statut",
             "date_creation", "date_derniere_activite", "messages",
         ]
-        read_only_fields = ["id", "utilisateur", "date_creation", "date_derniere_activite"]
+        read_only_fields = ["id", "utilisateur", "superviseur", "date_creation", "date_derniere_activite"]
 
 
 class MessageCercleSerializer(serializers.ModelSerializer):

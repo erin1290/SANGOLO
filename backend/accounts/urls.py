@@ -8,7 +8,7 @@ from .auth import (
     inscription_ado, connexion_ado,
     connexion_ecoutant, connexion_superviseur, connexion_psychologue,
     changer_mot_de_passe,
-    stats_superviseur, lister_ecoutants_en_attente,
+    stats_superviseur, lister_ecoutants_en_attente, lister_ados_supervision,
     valider_ecoutant, refuser_ecoutant,
 )
 
@@ -27,6 +27,7 @@ urlpatterns = [
     path("auth/ado/changer-mot-de-passe/", changer_mot_de_passe, name="changer_mot_de_passe"),
     path("superviseur/stats/", stats_superviseur, name="stats_superviseur"),
     path("superviseur/ecoutants-en-attente/", lister_ecoutants_en_attente, name="lister_ecoutants_en_attente"),
+    path("superviseur/ados/", lister_ados_supervision, name="lister_ados_supervision"),
     path("superviseur/ecoutants/<int:ecoutant_id>/valider/", valider_ecoutant, name="valider_ecoutant"),
     path("superviseur/ecoutants/<int:ecoutant_id>/refuser/", refuser_ecoutant, name="refuser_ecoutant"),
 ] + router.urls

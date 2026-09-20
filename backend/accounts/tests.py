@@ -11,7 +11,7 @@ from django.urls import reverse
 from rest_framework.test import APIClient
 from rest_framework import status
 
-from .models import Ecoutant, StatutEcoutant
+from .models import Ecoutant, StatutEcoutant, Superviseur, Utilisateur
 
 
 class InscriptionAdoTests(TestCase):
@@ -106,3 +106,33 @@ class ConnexionEcoutantTests(TestCase):
         })
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("token", response.data)
+
+
+class SupervisionAccesTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        from django.contrib.auth.models import User
+        self.user_superviseur = User.objects.create_user(
+            username="superviseur_test", email="superviseur@test.org", password="motdepasse123"
+        )
+        Superviseur.objects.create(
+            user=self.user_superviseur, nom_complet="Superviseur Test",
+            email="superviseur@test.org", mot_de_passe_hash=self.user_superviseur.password,
+        )
+        user_ado = User.objects.create_user(username="ado_liste", password="motdepasse123")
+        self.ado = Utilisateur.objects.create(
+            user=user_ado, pseudo="ado_liste", age=16, mot_de_passe_hash=user_ado.password,
+        )
+
+    def test_superviseur_peut_lister_les_ados_sans_donnees_identifiantes(self):
+        self.client.force_authenticate(user=self.user_superviseur)
+        response = self.client.get(reverse("lister_ados_supervision"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]["pseudo"], self.ado.pseudo)
+        self.assertEqual(response.data[0]["age"], self.ado.age)
+        self.assertNotIn("email", response.data[0])
+
+    def test_ado_ne_peut_pas_lister_les_inscrits(self):
+        self.client.force_authenticate(user=self.ado.user)
+        response = self.client.get(reverse("lister_ados_supervision"))
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

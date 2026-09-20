@@ -5,7 +5,7 @@ Aucun message n'est jamais généré automatiquement — chaque ligne vient
 d'un humain (ado, écoutant, ou membre d'un cercle).
 """
 from django.db import models
-from accounts.models import Utilisateur, Ecoutant
+from accounts.models import Utilisateur, Ecoutant, Superviseur
 
 
 class StatutConversation(models.TextChoices):
@@ -22,6 +22,11 @@ class Conversation(models.Model):
         Ecoutant, on_delete=models.SET_NULL, null=True, blank=True,
         related_name="conversations"
     )
+    superviseur = models.ForeignKey(
+        Superviseur, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="conversations_supervision",
+        help_text="Renseigné uniquement pour une discussion privée issue d'une alerte.",
+    )
     statut = models.CharField(
         max_length=20, choices=StatutConversation.choices,
         default=StatutConversation.EN_ATTENTE
@@ -36,6 +41,7 @@ class Conversation(models.Model):
 class AuteurMessage(models.TextChoices):
     UTILISATEUR = "utilisateur", "Ado"
     ECOUTANT = "ecoutant", "Écoutant"
+    SUPERVISEUR = "superviseur", "Superviseur"
 
 
 class Message(models.Model):
@@ -49,6 +55,7 @@ class Message(models.Model):
     # Rempli par le module de supervision IA (cf. app alertes) — jamais visible
     # par l'ado ou l'écoutant, uniquement par un superviseur en cas d'alerte.
     signale_par_module_ia = models.BooleanField(default=False)
+    analyse_ia_effectuee = models.BooleanField(default=False)
 
     lu = models.BooleanField(default=False)
 

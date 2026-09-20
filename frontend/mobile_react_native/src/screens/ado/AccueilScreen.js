@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { colors, fonts } from '../../theme/colors';
 import { NavTile, PrimaryButton } from '../../components/Shared';
+import LanguagePicker from '../../components/LanguagePicker';
 import { useLangue } from '../../context/LanguageContext';
 
 const HUMEURS = ['🙂', '😐', '😢', '😠', '😴'];
@@ -47,7 +48,7 @@ const TRADUCTIONS = {
 
 export default function AccueilScreen({ navigation }) {
   const [humeur, setHumeur] = useState(0);
-  const { langue, changerLangue } = useLangue();
+  const { langue } = useLangue();
   const t = TRADUCTIONS[langue] || TRADUCTIONS.fr;
 
   return (
@@ -58,9 +59,7 @@ export default function AccueilScreen({ navigation }) {
           <Text style={s.greeting}>{t.bonsoir}</Text>
           <Text style={s.subGreeting}>{t.content}</Text>
         </View>
-        <TouchableOpacity style={s.langueBtn} onPress={() => changerLangue(langue === 'fr' ? 'en' : 'fr')}>
-          <Text style={s.langueText}>{langue === 'fr' ? 'EN' : 'FR'}</Text>
-        </TouchableOpacity>
+        <LanguagePicker />
         <View style={s.avatar} />
       </View>
 

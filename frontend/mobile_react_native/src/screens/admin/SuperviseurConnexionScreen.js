@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 import { colors, fonts } from '../../theme/colors';
 import { HeroBand, SectionLabel, PrimaryButton } from '../../components/Shared';
+import { connexionSuperviseur } from '../../services/apiService';
 
 export default function SuperviseurConnexionScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -15,15 +15,7 @@ export default function SuperviseurConnexionScreen({ navigation }) {
     setChargement(true);
     setErreur(null);
     try {
-      const baseUrl = 'http://192.168.100.6:8000/api';
-      const res = await fetch(`${baseUrl}/accounts/auth/superviseur/connexion/`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), mot_de_passe: motDePasse }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.detail || 'Identifiants incorrects.');
-      await SecureStore.setItemAsync('auth_token', data.token);
-      if (data.nom_complet) await SecureStore.setItemAsync('user_nom', data.nom_complet);
+      await connexionSuperviseur({ email: email.trim(), motDePasse });
       navigation.reset({ index: 0, routes: [{ name: 'SuperviseurDashboard' }] });
     } catch (e) {
       setErreur(e.message || 'Erreur de connexion.');

@@ -15,7 +15,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 
 from .models import Conversation, Message, CercleEcoute, MessageCercle, MembreCercle
-from alertes.supervision import analyser_message_en_tache_de_fond
+from alertes.supervision import planifier_analyse_message
 
 
 class ConversationConsumer(AsyncWebsocketConsumer):
@@ -44,7 +44,7 @@ class ConversationConsumer(AsyncWebsocketConsumer):
                 "date_envoi": message.date_envoi.isoformat(),
             },
         )
-        analyser_message_en_tache_de_fond(message)
+        planifier_analyse_message(message.id)
     async def diffuser_message(self, event):
         await self.send(text_data=json.dumps({
             "auteur": event["auteur"],

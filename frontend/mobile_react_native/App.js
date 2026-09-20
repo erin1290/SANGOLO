@@ -36,14 +36,16 @@ import {
 
 import {
   AdminConnexionScreen, AdminDashboardScreen, AlertesListeScreen, AlerteDetailScreen,
-  ValidationEcoutantsScreen, AnnuaireAdminScreen, AdminParametresScreen,
+  ValidationEcoutantsScreen, AnnuaireAdminScreen, AdminParametresScreen, OrientationPsychologueScreen,
 } from './src/screens/admin/AdminScreens';
+import ChatSuperviseurScreen from './src/screens/admin/ChatSuperviseurScreen';
 import SuperviseurConnexionScreen from './src/screens/admin/SuperviseurConnexionScreen';
 import CreerCercleScreen from './src/screens/ecoutant/CreerCercleScreen';
 import CercleAdoScreen from './src/screens/ado/CercleAdoScreen';
 import AdoPeerScreen from './src/screens/ado/AdoPeerScreen';
 import ChatAdoAdoScreen from './src/screens/ado/ChatAdoAdoScreen';
 import SuperviseurDashboardScreen from './src/screens/admin/SuperviseurDashboardScreen';
+import { AdosInscritsScreen, CerclesActifsScreen } from './src/screens/admin/SuperviseurDataScreens';
 
 import { colors } from './src/theme/colors';
 
@@ -107,12 +109,16 @@ export default function App() {
         <Stack.Screen name="AdminDashboard" component={AdminDashboardScreen} />
         <Stack.Screen name="AdminAlertes" component={AlertesListeScreen} />
         <Stack.Screen name="AlerteDetail" component={AlerteDetailScreen} />
+        <Stack.Screen name="ChatSuperviseur" component={ChatSuperviseurScreen} />
+        <Stack.Screen name="OrientationPsychologue" component={OrientationPsychologueScreen} />
         <Stack.Screen name="ValidationEcoutants" component={ValidationEcoutantsScreen} />
         <Stack.Screen name="AnnuaireAdmin" component={AnnuaireAdminScreen} />
         <Stack.Screen name="AdminParametres" component={AdminParametresScreen} />
 
         <Stack.Screen name="SuperviseurConnexion" component={SuperviseurConnexionScreen} />
         <Stack.Screen name="SuperviseurDashboard" component={SuperviseurDashboardScreen} />
+        <Stack.Screen name="AdosInscrits" component={AdosInscritsScreen} />
+        <Stack.Screen name="CerclesActifs" component={CerclesActifsScreen} />
       </Stack.Navigator>
       </NavigationContainer>
     </LanguageProvider>

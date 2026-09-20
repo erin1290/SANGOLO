@@ -63,10 +63,12 @@ class PsychologuePartenaireAdmin(admin.ModelAdmin):
         "email",
         "telephone",
         "certifie",
+        "disponible",
         "date_creation",
     )
     list_filter = (
         "certifie",
+        "disponible",
     )
     search_fields = (
         "nom_complet",

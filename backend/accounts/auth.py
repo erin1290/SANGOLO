@@ -122,33 +122,38 @@ def connexion_ecoutant(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def connexion_superviseur(request):
-    email = request.data.get("email")
+    email = (request.data.get("email") or "").strip()
     mot_de_passe = request.data.get("mot_de_passe")
 
     try:
-        superviseur = Superviseur.objects.get(email=email)
+        superviseur = Superviseur.objects.get(email__iexact=email)
     except Superviseur.DoesNotExist:
         return Response(
             {"detail": "Identifiants incorrects."},
             status=401
         )
 
-    print("DEBUG SUPERVISEUR =", superviseur)
-    print("DEBUG USER =", superviseur.user)
-
-    # Vérifier qu'un compte utilisateur est associé
+    # Répare automatiquement un ancien profil créé dans l'admin Django si un
+    # compte User existant a le même e-mail. L'authentification réussie est
+    # requise avant de créer ce lien.
     if not superviseur.user:
-        return Response(
-            {
-                "detail": "Aucun compte utilisateur associé à ce superviseur. Contacte l'administration."
-            },
-            status=400
+        candidat = User.objects.filter(email__iexact=superviseur.email).first()
+        if not candidat:
+            return Response(
+                {"detail": "Ce profil superviseur n'a pas encore de compte de connexion associé."},
+                status=400,
+            )
+        user = authenticate(username=candidat.username, password=mot_de_passe)
+        if user is None:
+            return Response({"detail": "Identifiants incorrects."}, status=401)
+        superviseur.user = user
+        superviseur.mot_de_passe_hash = user.password
+        superviseur.save(update_fields=["user", "mot_de_passe_hash"])
+    else:
+        user = authenticate(
+            username=superviseur.user.username,
+            password=mot_de_passe
         )
-
-    user = authenticate(
-        username=superviseur.user.username,
-        password=mot_de_passe
-    )
 
     if user is None:
         return Response(
@@ -243,6 +248,20 @@ def lister_ecoutants_en_attente(request):
         "formation_validee", "entretien_effectue", "date_creation",
     )
     return Response(list(ecoutants))
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def lister_ados_supervision(request):
+    """Liste minimale des ados, exclusivement pour le tableau de supervision."""
+    user = request.user
+    if not (hasattr(user, "superviseur_profile") or user.is_staff):
+        return Response({"detail": "Réservé aux superviseurs."}, status=403)
+
+    ados = Utilisateur.objects.order_by("-date_creation").values(
+        "id", "pseudo", "age", "date_creation"
+    )
+    return Response(list(ados))
 
 
 @api_view(["POST"])

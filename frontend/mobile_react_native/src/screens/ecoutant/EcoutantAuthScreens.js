@@ -5,6 +5,7 @@ import { HeroBand, SectionLabel, NavTile, StatusBadge, PrimaryButton } from '../
 import { connexionEcoutant, listerConversations, listerCerclesEcoute, getStoredUserNom, getBaseUrl } from '../../services/apiService';
 import * as SecureStore from 'expo-secure-store';
 import { useLangue } from '../../context/LanguageContext';
+import LanguagePicker from '../../components/LanguagePicker';
 
 const TRADUCTIONS = {
   fr: {
@@ -52,17 +53,21 @@ const TRADUCTIONS = {
 };
 
 export function EcoutantWelcomeScreen({ navigation }) {
+  const { langue } = useLangue();
+  const t = langue === 'en'
+    ? { title: 'Thank you for helping\npeople feel better', continue: 'Continue' }
+    : { title: 'Merci de nous\naider à aller mieux', continue: 'Continuer' };
   return (
     <View style={s.welcomeContainer}>
       <Image source={require('../../../assets/logo_sangolo.png')} style={s.logo} resizeMode="contain" />
-      <Text style={s.welcomeTitle}>Merci de nous{'\n'}aider à aller mieux</Text>
+      <Text style={s.welcomeTitle}>{t.title}</Text>
       <View style={s.dots}>
         <View style={[s.dot, { backgroundColor: colors.amberDeep }]} />
         <View style={s.dot} /><View style={s.dot} />
       </View>
       <View style={{ height: 40 }} />
       <View style={{ width: '100%' }}>
-        <PrimaryButton label="Continuer" onPress={() => navigation.navigate('EcoutantConnexion')} />
+        <PrimaryButton label={t.continue} onPress={() => navigation.navigate('EcoutantConnexion')} />
       </View>
     </View>
   );
@@ -72,10 +77,14 @@ export function EcoutantConnexionScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [chargement, setChargement] = useState(false);
+  const { langue } = useLangue();
+  const t = langue === 'en'
+    ? { error: 'Error', missing: 'Please complete all fields.', invalid: 'Incorrect credentials.', title: 'Listener space', subtitle: 'Access reserved for approved volunteers', identifier: 'Email', password: 'Password', loading: 'Logging in...', login: 'Log in', note: 'Account created after approval by the partner organisation' }
+    : { error: 'Erreur', missing: 'Remplis tous les champs.', invalid: 'Identifiants incorrects.', title: 'Espace écoutant', subtitle: 'Accès réservé aux volontaires validés', identifier: 'Identifiant', password: 'Mot de passe', loading: 'Connexion...', login: 'Se connecter', note: "Compte créé après validation par l'association partenaire" };
 
   const seConnecter = async () => {
     if (!email.trim() || !motDePasse.trim()) {
-      Alert.alert('Erreur', 'Remplis tous les champs.');
+      Alert.alert(t.error, t.missing);
       return;
     }
     setChargement(true);
@@ -83,7 +92,7 @@ export function EcoutantConnexionScreen({ navigation }) {
       await connexionEcoutant({ email: email.trim(), motDePasse });
       navigation.reset({ index: 0, routes: [{ name: 'EcoutantDashboard' }] });
     } catch (e) {
-      Alert.alert('Erreur', e.message || 'Identifiants incorrects.');
+      Alert.alert(t.error, e.message || t.invalid);
     } finally {
       setChargement(false);
     }
@@ -91,15 +100,15 @@ export function EcoutantConnexionScreen({ navigation }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.paper, padding: 20 }}>
-      <HeroBand titre="Espace écoutant" sousTitre="Accès réservé aux volontaires validés" />
-      <SectionLabel>Identifiant</SectionLabel>
+      <HeroBand titre={t.title} sousTitre={t.subtitle} />
+      <SectionLabel>{t.identifier}</SectionLabel>
       <TextInput style={s.input} placeholder="toi@partenaire.org" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
-      <SectionLabel>Mot de passe</SectionLabel>
+      <SectionLabel>{t.password}</SectionLabel>
       <TextInput style={s.input} placeholder="••••••••" secureTextEntry value={motDePasse} onChangeText={setMotDePasse} />
       <View style={{ marginTop: 16 }}>
-        <PrimaryButton label={chargement ? 'Connexion...' : 'Se connecter'} onPress={seConnecter} loading={chargement} />
+        <PrimaryButton label={chargement ? t.loading : t.login} onPress={seConnecter} loading={chargement} />
       </View>
-      <Text style={s.note}>Compte créé après validation par l'association partenaire</Text>
+      <Text style={s.note}>{t.note}</Text>
     </View>
   );
 }
@@ -109,7 +118,7 @@ export function EcoutantDashboardScreen({ navigation }) {
   const [stats, setStats] = useState({ enAttente: 0, enCours: 0, nonLus: 0 });
   const [cercles, setCercles] = useState([]);
   const [chargement, setChargement] = useState(true);
-  const { langue, changerLangue } = useLangue();
+  const { langue } = useLangue();
   const t = TRADUCTIONS[langue] || TRADUCTIONS.fr;
 
   useEffect(() => {
@@ -154,9 +163,7 @@ export function EcoutantDashboardScreen({ navigation }) {
             <HeroBand titre={`${t.bonsoir} ${nom}`} sousTitre={t.merci}
               trailing={<View style={s.pillSolid}><Text style={s.pillSolidText}>🟢 {t.disponible}</Text></View>} />
           </View>
-          <TouchableOpacity style={s.langueBtn} onPress={() => changerLangue(langue === 'fr' ? 'en' : 'fr')}>
-            <Text style={s.langueText}>{langue === 'fr' ? 'EN' : 'FR'}</Text>
-          </TouchableOpacity>
+          <LanguagePicker light />
         </View>
         <SectionLabel>{t.aujourd}</SectionLabel>
         <NavTile icon={<Text style={{ fontSize: 18 }}>📥</Text>} label={t.attente} sub={t.attenteSub}

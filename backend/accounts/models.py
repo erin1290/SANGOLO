@@ -137,6 +137,10 @@ class PsychologuePartenaire(models.Model):
     email = models.EmailField(unique=True)
     telephone = models.CharField(max_length=30, blank=True)
     certifie = models.BooleanField(default=False)
+    disponible = models.BooleanField(
+        default=True,
+        help_text="Visible dans la liste d'orientation des superviseurs.",
+    )
     sexe = models.CharField(max_length=1, choices=[("M", "Masculin"), ("F", "Féminin")], blank=True)
     mot_de_passe_hash = models.CharField(max_length=255, blank=True)
 

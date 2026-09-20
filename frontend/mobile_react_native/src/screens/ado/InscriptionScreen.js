@@ -3,8 +3,13 @@ import { View, Text, TextInput, StyleSheet, ScrollView, Image, ActivityIndicator
 import { colors, fonts } from '../../theme/colors';
 import { HeroBand, SectionLabel, PrimaryButton, GhostButton } from '../../components/Shared';
 import { inscriptionAdo } from '../../services/apiService';
+import { useLangue } from '../../context/LanguageContext';
 
 export default function InscriptionScreen({ navigation }) {
+  const { langue } = useLangue();
+  const t = langue === 'en' ? {
+    title: 'Create your space', subtitle: 'Anonymous, just for you', pseudo: 'Username', pseudoHint: 'Choose a username (unique)', age: 'Age', password: 'Password', passwordHint: '8 characters minimum', confirmation: 'Confirmation', confirmationHint: 'Confirm your password', create: 'Create my space', note: 'No identifying information required', login: 'I already have an account — Log in',
+  } : { title: 'Crée ton espace', subtitle: 'Anonyme, juste pour toi', pseudo: 'Pseudo', pseudoHint: 'Choisis un pseudo (unique)', age: 'Âge', password: 'Mot de passe', passwordHint: '8 caractères minimum', confirmation: 'Confirmation', confirmationHint: 'Confirme ton mot de passe', create: 'Créer mon espace', note: 'Aucune donnée identifiante requise', login: "J'ai déjà un compte — Se connecter" };
   const [pseudo, setPseudo] = useState('');
   const [age, setAge] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
@@ -39,24 +44,24 @@ export default function InscriptionScreen({ navigation }) {
   return (
     <ScrollView style={s.container} contentContainerStyle={{ padding: 20 }}>
       <HeroBand
-        titre="Crée ton espace"
-        sousTitre="Anonyme, juste pour toi"
+        titre={t.title}
+        sousTitre={t.subtitle}
         leading={<View style={s.logoChip}><Image source={require('../../../assets/logo_sangolo.png')} style={s.logoSmall} resizeMode="contain" /></View>}
       />
-      <SectionLabel>Pseudo</SectionLabel>
-      <TextInput style={s.input} placeholder="Choisis un pseudo (unique)" value={pseudo} onChangeText={setPseudo} autoCapitalize="none" />
-      <SectionLabel>Âge</SectionLabel>
+      <SectionLabel>{t.pseudo}</SectionLabel>
+      <TextInput style={s.input} placeholder={t.pseudoHint} value={pseudo} onChangeText={setPseudo} autoCapitalize="none" />
+      <SectionLabel>{t.age}</SectionLabel>
       <TextInput style={s.input} placeholder="16" keyboardType="number-pad" value={age} onChangeText={setAge} />
-      <SectionLabel>Mot de passe</SectionLabel>
+      <SectionLabel>{t.password}</SectionLabel>
       <View style={s.passwordRow}>
-        <TextInput style={[s.input, { flex: 1 }]} placeholder="8 caractères minimum" secureTextEntry={!voirMdp} value={motDePasse} onChangeText={setMotDePasse} />
+        <TextInput style={[s.input, { flex: 1 }]} placeholder={t.passwordHint} secureTextEntry={!voirMdp} value={motDePasse} onChangeText={setMotDePasse} />
         <TouchableOpacity style={s.eyeBtn} onPress={() => setVoirMdp(!voirMdp)}>
           <Text style={s.eyeText}>{voirMdp ? '🙈' : '👁️'}</Text>
         </TouchableOpacity>
       </View>
-      <SectionLabel>Confirmation</SectionLabel>
+      <SectionLabel>{t.confirmation}</SectionLabel>
       <View style={s.passwordRow}>
-        <TextInput style={[s.input, { flex: 1 }]} placeholder="Confirme ton mot de passe" secureTextEntry={!voirMdp} value={confirmation} onChangeText={setConfirmation} />
+        <TextInput style={[s.input, { flex: 1 }]} placeholder={t.confirmationHint} secureTextEntry={!voirMdp} value={confirmation} onChangeText={setConfirmation} />
         <TouchableOpacity style={s.eyeBtn} onPress={() => setVoirMdp(!voirMdp)}>
           <Text style={s.eyeText}>{voirMdp ? '🙈' : '👁️'}</Text>
         </TouchableOpacity>
@@ -64,12 +69,12 @@ export default function InscriptionScreen({ navigation }) {
       {erreur ? <Text style={s.erreur}>{erreur}</Text> : null}
       <View style={{ marginTop: 18 }}>
         {chargement ? <ActivityIndicator color={colors.ink} size="large" /> : (
-          <PrimaryButton label="Créer mon espace" onPress={creerCompte} />
+          <PrimaryButton label={t.create} onPress={creerCompte} />
         )}
       </View>
-      <Text style={s.note}>Aucune donnée identifiante requise</Text>
+      <Text style={s.note}>{t.note}</Text>
       <View style={{ marginTop: 12 }}>
-        <GhostButton label="J'ai déjà un compte — Se connecter" onPress={() => navigation.navigate('ConnexionAdo')} />
+        <GhostButton label={t.login} onPress={() => navigation.navigate('ConnexionAdo')} />
       </View>
     </ScrollView>
   );

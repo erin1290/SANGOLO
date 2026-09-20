@@ -3,8 +3,11 @@ import { View, Text, TextInput, StyleSheet, ScrollView, ActivityIndicator } from
 import { colors, fonts } from '../../theme/colors';
 import { HeroBand, SectionLabel, PrimaryButton, GhostButton } from '../../components/Shared';
 import { connexionAdo } from '../../services/apiService';
+import { useLangue } from '../../context/LanguageContext';
 
 export default function ConnexionAdoScreen({ navigation }) {
+  const { langue } = useLangue();
+  const t = langue === 'en' ? { title: 'Log in', subtitle: 'Find your anonymous space', pseudo: 'Username', pseudoHint: 'Your username', password: 'Password', login: 'Log in', create: 'Create an account', note: 'No identifying information required' } : { title: 'Connexion', subtitle: 'Retrouve ton espace anonyme', pseudo: 'Pseudo', pseudoHint: 'Ton pseudo', password: 'Mot de passe', login: 'Se connecter', create: 'Créer un compte', note: 'Aucune donnée identifiante requise' };
   const [pseudo, setPseudo] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [chargement, setChargement] = useState(false);
@@ -29,27 +32,27 @@ export default function ConnexionAdoScreen({ navigation }) {
 
   return (
     <ScrollView style={s.container} contentContainerStyle={{ padding: 20 }}>
-      <HeroBand titre="Connexion" sousTitre="Retrouve ton espace anonyme" />
+      <HeroBand titre={t.title} sousTitre={t.subtitle} />
 
-      <SectionLabel>Pseudo</SectionLabel>
-      <TextInput style={s.input} placeholder="Ton pseudo" value={pseudo} onChangeText={setPseudo} autoCapitalize="none" />
+      <SectionLabel>{t.pseudo}</SectionLabel>
+      <TextInput style={s.input} placeholder={t.pseudoHint} value={pseudo} onChangeText={setPseudo} autoCapitalize="none" />
 
-      <SectionLabel>Mot de passe</SectionLabel>
+      <SectionLabel>{t.password}</SectionLabel>
       <TextInput style={s.input} placeholder="••••••••" secureTextEntry value={motDePasse} onChangeText={setMotDePasse} />
 
       {erreur ? <Text style={s.erreur}>{erreur}</Text> : null}
 
       <View style={{ marginTop: 18 }}>
         {chargement ? <ActivityIndicator color={colors.ink} size="large" /> : (
-          <PrimaryButton label="Se connecter" onPress={seConnecter} />
+          <PrimaryButton label={t.login} onPress={seConnecter} />
         )}
       </View>
 
       <View style={{ marginTop: 16 }}>
-        <GhostButton label="Créer un compte" onPress={() => navigation.replace('Inscription')} />
+        <GhostButton label={t.create} onPress={() => navigation.replace('Inscription')} />
       </View>
 
-      <Text style={s.note}>Aucune donnée identifiante requise</Text>
+      <Text style={s.note}>{t.note}</Text>
     </ScrollView>
   );
 }

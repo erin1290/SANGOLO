@@ -12,14 +12,11 @@ export default function SuperviseurDashboardScreen({ navigation }) {
   const [alertesUrgentes, setAlertesUrgentes] = useState(0);
   const [chargement, setChargement] = useState(true);
 
-  useEffect(() => {
-    const chargerAlertes = async () => {
+  const chargerAlertes = useCallback(async () => {
       try {
         const data = await listerAlertes();
         setAlertesUrgentes(data.filter((a) => a.gravite === 'urgent').length);
       } catch (e) { /* pas critique */ }
-    };
-    chargerAlertes();
   }, []);
 
   useEffect(() => {
@@ -37,7 +34,12 @@ export default function SuperviseurDashboardScreen({ navigation }) {
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { chargerStats(); }, [chargerStats]));
+  useFocusEffect(useCallback(() => {
+    chargerStats();
+    chargerAlertes();
+    const actualisation = setInterval(chargerAlertes, 10000);
+    return () => clearInterval(actualisation);
+  }, [chargerStats, chargerAlertes]));
 
   const handleLogout = async () => {
     await SecureStore.deleteItemAsync('auth_token');
@@ -74,10 +76,10 @@ export default function SuperviseurDashboardScreen({ navigation }) {
             onPress={() => navigation.navigate('ConversationsAttente')} />
           <NavTile icon={<Text style={{ fontSize: 18 }}>🔵</Text>} label="Cercles actifs" sub="Groupes d'écoute en cours"
             accent={colors.inkSurface} trailing={<StatusBadge text={String(stats?.cercles_actifs ?? 0)} />}
-            onPress={() => {}} />
+            onPress={() => navigation.navigate('CerclesActifs')} />
           <NavTile icon={<Text style={{ fontSize: 18 }}>📊</Text>} label="Ados inscrits" sub="Total sur la plateforme"
             accent={colors.ink} trailing={<StatusBadge text={String(stats?.ados_inscrits ?? 0)} />}
-            onPress={() => {}} />
+            onPress={() => navigation.navigate('AdosInscrits')} />
           <View style={{ flex: 1 }} />
           <TouchableOpacity style={s.logoutBtn} onPress={handleLogout}>
             <Text style={s.logoutText}>Se déconnecter</Text>

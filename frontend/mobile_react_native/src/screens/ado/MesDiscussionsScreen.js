@@ -42,7 +42,7 @@ export default function MesDiscussionsScreen({ navigation }) {
         body: JSON.stringify({ conversation_id: item.id }),
       });
     } catch (e) { /* silent */ }
-    const nomAffiche = item.ecoutant_nom || 'En attente d\'un écoutant';
+    const nomAffiche = item.superviseur_nom || item.ecoutant_nom || 'En attente d\'un écoutant';
     navigation.navigate('Chat', { conversationId: item.id, ecoutantNom: nomAffiche });
   };
 
@@ -82,7 +82,7 @@ export default function MesDiscussionsScreen({ navigation }) {
   };
 
   const renderItem = ({ item }) => {
-    const nomAffiche = item.ecoutant_nom || 'En attente d\'un écoutant';
+    const nomAffiche = item.superviseur_nom || item.ecoutant_nom || 'En attente d\'un écoutant';
     const dernierMsg = item.dernier_message;
     const nonLus = item.messages_non_lus || 0;
 
@@ -92,7 +92,7 @@ export default function MesDiscussionsScreen({ navigation }) {
         onPress={() => entrerConversation(item)}
       >
         <View style={s.cardRow}>
-          <View style={[s.avatar, { backgroundColor: item.ecoutant ? colors.green : colors.amber }]}>
+          <View style={[s.avatar, { backgroundColor: item.superviseur ? colors.coral : item.ecoutant ? colors.green : colors.amber }]}>
             <Text style={s.avatarText}>{nomAffiche.charAt(0).toUpperCase()}</Text>
           </View>
           <View style={s.cardContent}>
@@ -132,7 +132,7 @@ export default function MesDiscussionsScreen({ navigation }) {
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
         ListHeaderComponent={
           <View>
-            <HeroBand titre="Mes discussions" sousTitre="Tes conversations avec les écouteurs" />
+            <HeroBand titre="Mes discussions" sousTitre="Tes conversations avec l'équipe Sangolo" />
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 12, marginBottom: 8 }}>
               <TouchableOpacity
                 style={[s.filtrePill, filtre === 'toutes' && s.filtrePillActive]}

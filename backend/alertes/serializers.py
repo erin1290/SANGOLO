@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Alerte
+from .models import Alerte, OrientationPsychologue
 
 
 class AlerteSerializer(serializers.ModelSerializer):
@@ -12,10 +12,10 @@ class AlerteSerializer(serializers.ModelSerializer):
         fields = [
             "id", "conversation", "source", "gravite",
             "gravite_display", "source_display", "pseudo_ado",
-            "description", "statut", "superviseur_assigne",
+            "message", "description", "statut", "verdict_ia", "superviseur_assigne",
             "date_creation", "date_traitement", "justification_traitement",
         ]
-        read_only_fields = ["id", "date_creation"]
+        read_only_fields = ["id", "date_creation", "message"]
 
     def get_gravite_display(self, obj):
         return obj.get_gravite_display()
@@ -33,3 +33,13 @@ class AlerteSerializer(serializers.ModelSerializer):
             except Exception:
                 return ''
         return ''
+
+
+class OrientationPsychologueSerializer(serializers.ModelSerializer):
+    psychologue_nom = serializers.CharField(source="psychologue.nom_complet", read_only=True)
+    structure = serializers.CharField(source="psychologue.structure", read_only=True)
+
+    class Meta:
+        model = OrientationPsychologue
+        fields = ["id", "alerte", "psychologue", "psychologue_nom", "structure", "date_creation"]
+        read_only_fields = ["id", "alerte", "psychologue", "date_creation"]

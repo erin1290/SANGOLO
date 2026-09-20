@@ -7,6 +7,8 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
+      "image": "./assets/logo_sangolo.png",
+      "resizeMode": "contain",
       "backgroundColor": "#FBF8F3"
     },
     "assetBundlePatterns": [
@@ -16,7 +18,11 @@
       "supportsTablet": false
     },
     "android": {
-      "usesCleartextTraffic": true
+      "usesCleartextTraffic": true,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/logo_sangolo.png",
+        "backgroundColor": "#FBF8F3"
+      }
     },
     "web": {
       "bundler": "metro"

@@ -1,7 +1,7 @@
 from django.db.models import Q, Max, OuterRef, Subquery
 from rest_framework import viewsets, permissions, status
 from django.db import IntegrityError
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.decorators import api_view, permission_classes as perm_decorator
 from rest_framework.response import Response
 from .models import (
@@ -82,7 +82,24 @@ class MessageViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
+        conversation = serializer.validated_data["conversation"]
+        auteur = serializer.validated_data["auteur"]
+        user = self.request.user
+        if hasattr(user, "superviseur_profile"):
+            if conversation.superviseur != user.superviseur_profile or auteur != "superviseur":
+                raise PermissionDenied("Cette discussion est réservée au superviseur qui l'a ouverte.")
+        elif hasattr(user, "utilisateur_profile"):
+            if conversation.utilisateur != user.utilisateur_profile or auteur != "utilisateur":
+                raise PermissionDenied("Vous ne pouvez écrire que dans vos propres discussions.")
+        elif hasattr(user, "ecoutant_profile"):
+            if conversation.ecoutant != user.ecoutant_profile or auteur != "ecoutant":
+                raise PermissionDenied("Cette discussion n'est pas assignée à cet écoutant.")
+        else:
+            raise PermissionDenied("Profil non autorisé à envoyer un message.")
         message = serializer.save()
+        # L'analyse asynchrone s'applique aussi aux messages envoyés par l'API.
+        from alertes.supervision import planifier_analyse_message
+        planifier_analyse_message(message.id)
         # Si c'est un ecoutant qui repond a une conversation en_attente, passer en cours
         if message.auteur == 'ecoutant' and message.conversation.statut == StatutConversation.EN_ATTENTE:
             message.conversation.statut = StatutConversation.EN_COURS
@@ -284,7 +301,7 @@ def marquer_messages_lus(request):
     elif hasattr(user, "utilisateur_profile"):
         Message.objects.filter(
             conversation_id=conversation_id,
-            auteur="ecoutant",
+            auteur__in=["ecoutant", "superviseur"],
             lu=False,
         ).update(lu=True)
 
@@ -321,12 +338,17 @@ def conversation_stats(request):
         ecoutant_nom = None
         if conv.ecoutant:
             ecoutant_nom = conv.ecoutant.nom_complet
+        superviseur_nom = None
+        if conv.superviseur:
+            superviseur_nom = conv.superviseur.nom_complet
 
         result.append({
             "id": conv.id,
             "statut": conv.statut,
             "ecoutant": conv.ecoutant_id,
             "ecoutant_nom": ecoutant_nom,
+            "superviseur": conv.superviseur_id,
+            "superviseur_nom": superviseur_nom,
             "utilisateur_pseudo": conv.utilisateur.pseudo,
             "date_derniere_activite": conv.date_derniere_activite.isoformat() if conv.date_derniere_activite else None,
             "dernier_message": {

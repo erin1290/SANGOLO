@@ -2,8 +2,10 @@ import React from 'react';
 import { View, Image, StyleSheet } from 'react-native';
 import { colors } from '../../theme/colors';
 import { PrimaryButton } from '../../components/Shared';
+import { useLangue } from '../../context/LanguageContext';
 
 export default function WelcomeScreen({ navigation }) {
+  const { langue } = useLangue();
   return (
     <View style={s.container}>
       <Image source={require('../../../assets/logo_sangolo.png')} style={s.logo} resizeMode="contain" />
@@ -14,7 +16,7 @@ export default function WelcomeScreen({ navigation }) {
       </View>
       <View style={{ height: 40 }} />
       <View style={{ width: '100%' }}>
-        <PrimaryButton label="Continuer" onPress={() => navigation.navigate('Inscription')} />
+        <PrimaryButton label={langue === 'en' ? 'Continue' : 'Continuer'} onPress={() => navigation.navigate('Inscription')} />
       </View>
     </View>
   );

@@ -13,7 +13,13 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "change-moi-en-production")
 DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower() in ("true", "1", "yes")
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+# Les adresses de développement mobile sont fournies dans `.env`, séparées par
+# des virgules. Les espaces et entrées vides ne doivent jamais devenir un hôte.
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("DJANGO_ALLOWED_HOSTS", "").split(",")
+    if host.strip()
+]
 
 INSTALLED_APPS = [
     "daphne",
@@ -120,6 +126,9 @@ USE_I18N = True
 USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Modèle entraîné localement à partir des verdicts de superviseurs.
+SUPERVISION_LOCAL_MODEL_PATH = BASE_DIR / "data" / "supervision_local.json"
 
 # Configuration email (Gmail)
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

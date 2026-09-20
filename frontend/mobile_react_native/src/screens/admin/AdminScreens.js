@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { colors, fonts } from '../../theme/colors';
 import { HeroBand, SectionLabel, NavTile, StatusBadge, PrimaryButton, GhostButton, ListItemCard } from '../../components/Shared';
-import { deconnexion, listerEcoutantsEnAttente, validerEcoutant, refuserEcoutant, listerAlertes, detailAlerte, traiterAlerte } from '../../services/apiService';
+import { deconnexion, listerEcoutantsEnAttente, validerEcoutant, refuserEcoutant, listerAlertes, detailAlerte, traiterAlerte, contacterAdoDepuisAlerte, listerPsychologuesDisponibles, orienterAlerteVersPsychologue } from '../../services/apiService';
 
 export function AdminConnexionScreen({ navigation }) {
   return (
@@ -110,8 +110,16 @@ export function AlerteDetailScreen({ navigation, route }) {
   }, [route.params?.alerteId]);
 
   const handleContacter = async () => {
-    if (!alerte?.conversation) return;
-    navigation.navigate('Chat', { conversationId: alerte.conversation });
+    if (!alerte?.id) return;
+    setAction('contact');
+    try {
+      const conversation = await contacterAdoDepuisAlerte(alerte.id);
+      navigation.navigate('ChatSuperviseur', { conversationId: conversation.id, pseudoAdo: alerte.pseudo_ado || 'Ado' });
+    } catch (e) {
+      Alert.alert('Erreur', e.message);
+    } finally {
+      setAction('');
+    }
   };
 
   const handleCloturer = async () => {
@@ -121,6 +129,20 @@ export function AlerteDetailScreen({ navigation, route }) {
       await traiterAlerte(alerte.id, { statut: 'cloturee', justification: 'Traitée par le superviseur.' });
       Alert.alert('Alerte clôturée');
       navigation.goBack();
+    } catch (e) {
+      Alert.alert('Erreur', e.message);
+    } finally {
+      setAction('');
+    }
+  };
+
+  const handleVerdictIa = async (verdictIa) => {
+    if (!alerte?.id) return;
+    setAction('verdict');
+    try {
+      const miseAJour = await traiterAlerte(alerte.id, { verdictIa });
+      setAlerte(miseAJour);
+      Alert.alert(verdictIa === 'confirmee' ? 'Signal confirmé' : 'Faux positif enregistré');
     } catch (e) {
       Alert.alert('Erreur', e.message);
     } finally {
@@ -142,14 +164,70 @@ export function AlerteDetailScreen({ navigation, route }) {
       <View style={s.quoteBox}>
         <Text style={s.quoteText}>Détection : {alerte.description}</Text>
       </View>
-      <PrimaryButton label="Contacter l'ado" onPress={handleContacter} />
-      <GhostButton label="Orienter vers un psychologue" onPress={() => {}} />
+      {alerte.source === 'module_ia' && alerte.verdict_ia === 'a_confirmer' ? <>
+        <GhostButton label="Confirmer le signal IA" onPress={() => handleVerdictIa('confirmee')} disabled={action === 'verdict'} />
+        <GhostButton label="Marquer comme faux positif" onPress={() => handleVerdictIa('faux_positif')} disabled={action === 'verdict'} />
+      </> : null}
+      <PrimaryButton label={action === 'contact' ? 'Ouverture...' : "Contacter l'ado"} onPress={handleContacter} disabled={!!action} />
+      <GhostButton label="Orienter vers un psychologue" onPress={() => navigation.navigate('OrientationPsychologue', { alerteId: alerte.id, pseudoAdo: alerte.pseudo_ado || 'Ado' })} disabled={!!action} />
       <GhostButton
         label={action === 'traitement' ? 'Traitement en cours...' : 'Clôturer l\'alerte'}
         onPress={handleCloturer}
         disabled={action === 'traitement'}
       />
       <Text style={s.note}>Décision toujours humaine — jamais automatique</Text>
+    </View>
+  );
+}
+
+export function OrientationPsychologueScreen({ navigation, route }) {
+  const [psychologues, setPsychologues] = useState([]);
+  const [chargement, setChargement] = useState(true);
+  const [selection, setSelection] = useState(null);
+
+  useEffect(() => {
+    listerPsychologuesDisponibles()
+      .then((data) => setPsychologues(Array.isArray(data) ? data : []))
+      .catch((e) => Alert.alert('Erreur', e.message))
+      .finally(() => setChargement(false));
+  }, []);
+
+  const choisir = (psychologue) => {
+    Alert.alert(
+      'Confirmer l’orientation',
+      `Orienter ${route.params?.pseudoAdo || 'cet ado'} vers ${psychologue.nom_complet} ?`,
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Confirmer', onPress: async () => {
+          setSelection(psychologue.id);
+          try {
+            await orienterAlerteVersPsychologue(route.params?.alerteId, psychologue.id);
+            Alert.alert('Orientation enregistrée', 'La décision est maintenant enregistrée dans le dossier de l’alerte.');
+            navigation.goBack();
+          } catch (e) {
+            Alert.alert('Erreur', e.message);
+          } finally {
+            setSelection(null);
+          }
+        } },
+      ]
+    );
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.paper, padding: 20 }}>
+      <HeroBand titre="Orienter vers un psychologue" sousTitre="Professionnels certifiés et disponibles" />
+      {chargement ? <ActivityIndicator color={colors.ink} /> : psychologues.length === 0 ? (
+        <Text style={s.note}>Aucun psychologue disponible actuellement.</Text>
+      ) : psychologues.map((p) => (
+        <ListItemCard
+          key={p.id}
+          titre={p.nom_complet}
+          sousTitre={`${p.structure} · ${p.ville}${p.telephone ? ` · ${p.telephone}` : ''}`}
+          tag={<StatusBadge text={selection === p.id ? 'Envoi...' : 'Disponible'} color={colors.green} />}
+          onPress={() => !selection && choisir(p)}
+        />
+      ))}
     </View>
   );
 }
