@@ -130,11 +130,15 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Modèle entraîné localement à partir des verdicts de superviseurs.
 SUPERVISION_LOCAL_MODEL_PATH = BASE_DIR / "data" / "supervision_local.json"
 
-# Configuration email (Gmail)
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = "ninariccierin@gmail.com"  # ← remplace par ton vrai email
-EMAIL_HOST_PASSWORD = "lvlgxrzoagaeutty"  # ← remplace par le mot de passe d'application (sans espaces)
-DEFAULT_FROM_EMAIL = "Sangolo <ninariccierin@gmail.com>"
+# Configuration e-mail. Les identifiants ne doivent jamais être inscrits dans
+# le code source : ils sont fournis uniquement dans le fichier `.env` du
+# serveur de déploiement.
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() in ("true", "1", "yes")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "Sangolo <noreply@sangolo.local>")

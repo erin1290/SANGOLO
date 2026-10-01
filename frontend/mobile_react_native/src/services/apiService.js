@@ -1,10 +1,44 @@
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
+import SourceCode from 'react-native/Libraries/NativeModules/specs/NativeSourceCode';
 
-// URL de l'API backend — configurable via .env (EXPO_PUBLIC_API_URL)
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.173:8000/api';
+// En mode Expo Go/LAN, Metro fournit l'URL à laquelle le téléphone a chargé
+// le bundle (par ex. exp://192.168.12.34:8081). Django tourne sur ce même PC,
+// donc son hôte est automatiquement réutilisé avec le port 8000. Ainsi, aucun
+// changement d'IP n'est nécessaire après un changement de Wi-Fi.
+function apiDepuisMetro() {
+  if (Platform.OS === 'web') return '';
+  // `getConstants()` est l'API React Native effectivement utilisée par Expo
+  // lui-même pour connaître l'URL du bundle. NativeModules.SourceCode ne
+  // renseigne pas systématiquement scriptURL dans Expo Go, ce qui provoquait
+  // l'erreur vue sur le téléphone.
+  const scriptUrl = SourceCode.getConstants?.().scriptURL || '';
+  const host = scriptUrl.match(/^(?:exp|http|https):\/\/([^/:]+)/i)?.[1];
+  return host && host !== 'localhost' && host !== '127.0.0.1'
+    ? `http://${host}:8000/api`
+    : '';
+}
+
+function apiWebLocale() {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return '';
+  const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+  return `${protocol}//${window.location.hostname}:8000/api`;
+}
+
+// Une URL explicitement configurée reste utile uniquement pour un backend
+// déployé publiquement (HTTPS) ou un émulateur. Elle est un secours : Expo Go
+// sur le réseau local privilégie toujours l'adresse réellement utilisée par
+// Metro, donc l'adresse s'adapte à chaque Wi-Fi.
+const configuredApiUrl = (process.env.EXPO_PUBLIC_API_URL || '').replace(/\/$/, '');
 
 export function getBaseUrl() {
-  return API_BASE_URL;
+  const apiUrl = apiDepuisMetro() || configuredApiUrl || apiWebLocale();
+  if (!apiUrl) {
+    throw new ApiException(
+      "Impossible de détecter le serveur. Lance Expo en mode LAN et Django avec : python manage.py runserver 0.0.0.0:8000."
+    );
+  }
+  return apiUrl;
 }
 
 async function headers(withAuth = true) {

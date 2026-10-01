@@ -136,3 +136,17 @@ class SupervisionAccesTests(TestCase):
         self.client.force_authenticate(user=self.ado.user)
         response = self.client.get(reverse("lister_ados_supervision"))
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_superviseur_peut_se_connecter_et_consulter_son_tableau_de_bord(self):
+        """Parcours utilisé par l'interface de supervision web."""
+        response = self.client.post(reverse("connexion_superviseur"), {
+            "email": "superviseur@test.org",
+            "mot_de_passe": "motdepasse123",
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("token", response.data)
+
+        self.client.credentials(HTTP_AUTHORIZATION=f"Token {response.data['token']}")
+        response = self.client.get(reverse("stats_superviseur"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("ados_inscrits", response.data)

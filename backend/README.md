@@ -11,7 +11,10 @@ Django + Django REST Framework + PostgreSQL + Channels.
 4. `python manage.py makemigrations accounts journal messagerie alertes ressources planning`
 5. `python manage.py migrate`
 6. `python manage.py createsuperuser` (pour accéder à /admin/)
-7. `python manage.py runserver` (ou `daphne sangolo.asgi:application` pour le temps réel)
+7. Pour Expo Go et le portail web sur le réseau local, utiliser
+   `python manage.py runserver 0.0.0.0:8000` (ou `daphne sangolo.asgi:application`
+   pour le temps réel). Ajouter l'IP LAN du PC dans `DJANGO_ALLOWED_HOSTS` du
+   fichier `.env` avant de lancer le serveur.
 
 ## Structure des apps
 
@@ -48,7 +51,8 @@ aux garde-fous du cahier des charges :
 - `planning/tests.py` — une séance physique ne peut jamais être
   assignée à un écoutant
 
-Lancer toute la suite :
+Lancer toute la suite sans dépendre de PostgreSQL et sans jamais toucher à la
+base réelle :
 ```
-python manage.py test
+python manage.py test --settings=sangolo.test_settings
 ```

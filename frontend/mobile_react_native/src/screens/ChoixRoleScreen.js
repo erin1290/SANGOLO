@@ -11,12 +11,10 @@ export default function ChoixRoleScreen({ navigation }) {
     title: 'Who are you?', sub: 'Choose your space to continue',
     ado: 'Teen', adoSub: 'Confidential listening space',
     ecoutant: 'Listener', ecoutantSub: 'Partner volunteer',
-    superviseur: 'Supervisor', superviseurSub: 'Supervision team',
   } : {
     title: 'Qui es-tu ?', sub: 'Choisis ton espace pour continuer',
     ado: 'Ado', adoSub: "Espace d'écoute confidentiel",
     ecoutant: 'Écoutant', ecoutantSub: 'Bénévole partenaire',
-    superviseur: 'Superviseur', superviseurSub: 'Équipe de supervision',
   };
   return (
     <View style={s.container}>
@@ -38,13 +36,6 @@ export default function ChoixRoleScreen({ navigation }) {
           sub={t.ecoutantSub}
           accent={colors.green}
           onPress={() => navigation.navigate('EcoutantWelcome')}
-        />
-        <NavTile
-          icon={<Text style={s.icon}>🛡️</Text>}
-          label={t.superviseur}
-          sub={t.superviseurSub}
-          accent={colors.inkSurface}
-          onPress={() => navigation.navigate('SuperviseurConnexion')}
         />
       </View>
     </View>

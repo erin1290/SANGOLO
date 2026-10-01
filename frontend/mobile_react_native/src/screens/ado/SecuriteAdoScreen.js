@@ -4,7 +4,7 @@ import * as LocalAuthentication from 'expo-local-authentication';
 import * as SecureStore from 'expo-secure-store';
 import { colors, fonts } from '../../theme/colors';
 import { HeroBand, SectionLabel, NavTile, StatusBadge, GhostButton, PrimaryButton } from '../../components/Shared';
-import { deconnexion } from '../../services/apiService';
+import { deconnexion, getBaseUrl } from '../../services/apiService';
 
 export default function SecuriteAdoScreen({ navigation }) {
   const [biometriqueActive, setBiometriqueActive] = useState(false);
@@ -56,7 +56,9 @@ export default function SecuriteAdoScreen({ navigation }) {
     setChargementMdp(true);
     try {
       const token = await SecureStore.getItemAsync('auth_token');
-      const baseUrl = 'http://192.168.100.111:8000/api';
+      // L'adresse est dérivée de Metro : elle suit automatiquement le Wi-Fi
+      // utilisé par le PC, au lieu de garder l'ancienne IP du développeur.
+      const baseUrl = getBaseUrl();
       const res = await fetch(`${baseUrl}/accounts/auth/ado/changer-mot-de-passe/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Token ${token}` },
